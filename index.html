@@ -1,0 +1,1711 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>动漫人物档案库</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #222240;
+    --accent: #6c63ff;
+    --accent-light: #8b83ff;
+    --accent-glow: rgba(108, 99, 255, 0.3);
+    --text-primary: #e8e6f0;
+    --text-secondary: #9895a8;
+    --text-muted: #6b6879;
+    --border: rgba(108, 99, 255, 0.15);
+    --gradient-1: linear-gradient(135deg, #6c63ff 0%, #e040fb 100%);
+    --gradient-2: linear-gradient(135deg, #00d2ff 0%, #6c63ff 100%);
+    --gradient-3: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+
+  .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .bg-effects .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 20s ease-in-out infinite; }
+  .bg-effects .orb:nth-child(1) { width: 400px; height: 400px; background: #6c63ff; top: -100px; left: -100px; }
+  .bg-effects .orb:nth-child(2) { width: 300px; height: 300px; background: #e040fb; bottom: -50px; right: -50px; animation-delay: -7s; }
+  .bg-effects .orb:nth-child(3) { width: 250px; height: 250px; background: #00d2ff; top: 50%; left: 50%; animation-delay: -14s; }
+  @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(30px,-30px) scale(1.1);} 66%{transform:translate(-20px,20px) scale(0.9);} }
+
+  .site-header { position:relative; z-index:10; padding:28px 40px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--border); background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); }
+  .site-header .logo { font-family:'Zen Maru Gothic',sans-serif; font-size:26px; font-weight:900; background:var(--gradient-1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:2px; }
+  .site-header .subtitle { font-size:13px; color:var(--text-muted); margin-left:8px; }
+
+  .main-layout { position:relative; z-index:10; display:flex; min-height:calc(100vh - 80px); }
+
+  .sidebar { width:280px; min-width:280px; border-right:1px solid var(--border); background:rgba(18,18,26,0.6); backdrop-filter:blur(10px); padding:20px 0; overflow-y:auto; max-height:calc(100vh - 80px); position:sticky; top:0; }
+  .sidebar::-webkit-scrollbar { width:4px; }
+  .sidebar::-webkit-scrollbar-track { background:transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background:var(--accent); border-radius:4px; }
+  .sidebar-title { font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:3px; padding:0 24px 12px; }
+  .home-btn { display:flex; align-items:center; gap:10px; padding:12px 24px; cursor:pointer; transition:all 0.3s ease; border-left:3px solid transparent; color:var(--text-secondary); font-size:14px; }
+  .home-btn:hover { background:rgba(108,99,255,0.06); border-left-color:var(--accent); color:var(--text-primary); }
+  .home-btn .home-icon { font-size:18px; width:24px; text-align:center; }
+  .sidebar-divider { height:1px; background:var(--border); margin:8px 24px; }
+  .search-box { padding:0 20px 12px; }
+  .search-input { width:100%; padding:8px 12px 8px 34px; background:rgba(108,99,255,0.08); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:13px; outline:none; transition:all 0.3s ease; }
+  .search-input::placeholder { color:var(--text-muted); }
+  .search-input:focus { border-color:var(--accent); background:rgba(108,99,255,0.12); }
+  .search-wrap { position:relative; }
+  .search-wrap .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--text-muted); pointer-events:none; }
+  .anime-hidden { display:none !important; }
+
+  .anime-item { display:flex; align-items:center; gap:14px; padding:14px 24px; cursor:pointer; transition:all 0.3s ease; border-left:3px solid transparent; }
+  .anime-item:hover { background:rgba(108,99,255,0.06); border-left-color:var(--accent); }
+  .anime-item.active { background:rgba(108,99,255,0.1); border-left-color:var(--accent-light); }
+  .anime-item .anime-icon { width:48px; height:48px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; overflow:hidden; }
+  .anime-item .anime-icon img { width:100%; height:100%; object-fit:cover; border-radius:var(--radius-sm); }
+  .anime-item .anime-info { flex:1; min-width:0; }
+  .anime-item .anime-name { font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .anime-item .anime-meta { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+  .content-area { flex:1; padding:0; overflow-y:auto; max-height:calc(100vh - 80px); }
+  .content-area::-webkit-scrollbar { width:6px; }
+  .content-area::-webkit-scrollbar-track { background:transparent; }
+  .content-area::-webkit-scrollbar-thumb { background:rgba(108,99,255,0.3); border-radius:6px; }
+
+  .welcome-page { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; padding:40px; }
+  .welcome-page .welcome-icon { font-size:72px; margin-bottom:24px; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+  .welcome-page h2 { font-family:'Zen Maru Gothic',sans-serif; font-size:28px; margin-bottom:12px; background:var(--gradient-1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .welcome-page p { color:var(--text-secondary); font-size:15px; max-width:400px; line-height:1.8; }
+
+  .anime-detail { display:none; }
+  .anime-detail.active { display:block; }
+
+  .anime-banner { position:relative; height:320px; overflow:hidden; }
+  .anime-banner .banner-bg { width:100%; height:100%; object-fit:cover; filter:brightness(0.4) blur(2px); }
+  .anime-banner .banner-overlay { position:absolute; inset:0; background:linear-gradient(180deg,transparent 30%,var(--bg-primary) 100%); display:flex; align-items:flex-end; padding:40px; }
+  .banner-content { display:flex; align-items:flex-end; gap:32px; width:100%; }
+  .banner-poster { width:160px; height:220px; border-radius:var(--radius); overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.5); flex-shrink:0; border:2px solid rgba(255,255,255,0.1); }
+  .banner-poster img { width:100%; height:100%; object-fit:cover; }
+  .banner-info { flex:1; padding-bottom:8px; }
+  .banner-info h1 { font-family:'Zen Maru Gothic',sans-serif; font-size:36px; font-weight:900; margin-bottom:6px; text-shadow:0 2px 20px rgba(0,0,0,0.5); }
+  .banner-info .jp-name { font-size:16px; color:var(--text-secondary); margin-bottom:14px; font-weight:300; }
+  .banner-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .banner-tags .tag { padding:4px 14px; border-radius:20px; font-size:12px; font-weight:500; background:rgba(108,99,255,0.2); color:var(--accent-light); border:1px solid rgba(108,99,255,0.3); }
+  .banner-stats { display:flex; gap:24px; font-size:13px; color:var(--text-secondary); }
+  .banner-stats span { display:flex; align-items:center; gap:6px; }
+  .banner-stats .stat-icon { font-size:16px; }
+
+  .anime-synopsis { padding:32px 40px; border-bottom:1px solid var(--border); }
+  .anime-synopsis h3 { font-size:18px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .anime-synopsis h3::before { content:''; width:4px; height:20px; background:var(--gradient-1); border-radius:2px; }
+  .anime-synopsis p { font-size:14px; line-height:2; color:var(--text-secondary); }
+
+  .seasons-section { padding:0 40px 32px; border-bottom:1px solid var(--border); }
+  .seasons-section h3 { font-size:18px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .seasons-section h3::before { content:''; width:4px; height:20px; background:var(--gradient-3); border-radius:2px; }
+  .season-list { display:flex; flex-direction:column; gap:10px; }
+  .season-card { background:var(--bg-card); border-radius:var(--radius-sm); padding:14px 20px; border:1px solid var(--border); display:flex; align-items:center; gap:16px; transition:all 0.3s; }
+  .season-card:hover { border-color:var(--accent); background:var(--bg-card-hover); }
+  .season-badge { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; background:var(--gradient-1); color:#fff; white-space:nowrap; flex-shrink:0; }
+  .season-info { flex:1; }
+  .season-title { font-size:14px; font-weight:700; margin-bottom:3px; }
+  .season-meta { font-size:12px; color:var(--text-muted); display:flex; gap:16px; flex-wrap:wrap; }
+  .season-meta span { display:flex; align-items:center; gap:4px; }
+  .season-link { display:inline-flex; align-items:center; gap:4px; margin-top:8px; font-size:12px; font-weight:600; color:var(--accent-light); text-decoration:none; padding:4px 12px; border-radius:20px; background:rgba(108,99,255,0.12); border:1px solid rgba(108,99,255,0.3); transition:all 0.3s ease; }
+  .season-link:hover { background:rgba(108,99,255,0.25); border-color:var(--accent); color:#fff; transform:translateX(2px); }
+
+  .characters-section { padding:32px 40px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .section-header h3 { font-size:20px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .section-header h3::before { content:''; width:4px; height:22px; background:var(--gradient-2); border-radius:2px; }
+  .section-header .char-count { font-size:13px; color:var(--text-muted); }
+
+  .char-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px; }
+  .char-card { background:var(--bg-card); border-radius:var(--radius); overflow:hidden; cursor:pointer; transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); border:1px solid transparent; position:relative; }
+  .char-card:hover { transform:translateY(-8px); border-color:var(--accent); box-shadow:0 12px 40px rgba(108,99,255,0.2); }
+  .char-card .card-image { width:100%; height:280px; overflow:hidden; position:relative; }
+  .char-card .card-image img { width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease; }
+  .char-card:hover .card-image img { transform:scale(1.08); }
+  .char-card .card-image .card-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:64px; }
+  .char-card .card-image .role-badge { position:absolute; top:12px; right:12px; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:700; backdrop-filter:blur(10px); }
+  .role-badge.protagonist { background:rgba(108,99,255,0.7); color:#fff; }
+  .role-badge.supporting { background:rgba(0,210,255,0.6); color:#fff; }
+  .role-badge.antagonist { background:rgba(245,87,108,0.6); color:#fff; }
+  .char-card .card-body { padding:16px; }
+  .char-card .char-name { font-size:16px; font-weight:700; margin-bottom:3px; }
+  .char-card .char-name-jp { font-size:12px; color:var(--text-muted); margin-bottom:8px; font-weight:300; }
+  .char-card .char-cv { font-size:12px; color:var(--text-secondary); }
+  .char-card .char-cv strong { color:var(--accent-light); }
+
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:1000; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease; }
+  .modal-overlay.show { display:flex; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .modal { background:var(--bg-secondary); border-radius:20px; width:100%; max-width:900px; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--border); animation:slideUp 0.4s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow:0 24px 80px rgba(0,0,0,0.6); }
+  @keyframes slideUp { from{transform:translateY(40px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 28px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .modal-header h2 { font-size:20px; font-weight:700; }
+  .modal-close { width:36px; height:36px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .modal-close:hover { background:rgba(245,87,108,0.15); border-color:#f5576c; color:#f5576c; }
+  .modal-body { overflow-y:auto; padding:28px; flex:1; }
+  .modal-body::-webkit-scrollbar { width:5px; }
+  .modal-body::-webkit-scrollbar-thumb { background:var(--accent); border-radius:5px; }
+
+  .profile-layout { display:flex; gap:32px; margin-bottom:28px; }
+  .profile-image-box { width:240px; flex-shrink:0; }
+  .profile-image-box img { width:100%; border-radius:var(--radius); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .profile-image-box .placeholder-img { width:100%; height:320px; border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:96px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .profile-main { flex:1; }
+
+  .profile-name-block { margin-bottom:20px; }
+  .profile-name-block .p-name { font-family:'Zen Maru Gothic',sans-serif; font-size:32px; font-weight:900; margin-bottom:4px; }
+  .profile-name-block .p-name-jp { font-size:16px; color:var(--text-muted); margin-bottom:4px; }
+  .profile-name-block .p-cv { font-size:13px; color:var(--text-secondary); }
+  .profile-name-block .p-cv strong { color:var(--accent-light); }
+
+  .attr-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+  .attr-item { background:rgba(108,99,255,0.06); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px; }
+  .attr-item .attr-label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+  .attr-item .attr-value { font-size:14px; font-weight:500; }
+
+  .info-section { margin-bottom:24px; }
+  .info-section h4 { font-size:15px; font-weight:700; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .info-section h4 .icon { font-size:18px; }
+  .info-section p, .info-section ul { font-size:14px; line-height:1.9; color:var(--text-secondary); }
+  .info-section ul { padding-left:20px; }
+  .info-section ul li { margin-bottom:4px; }
+
+  .quote-block { background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(224,64,251,0.06)); border-left:3px solid var(--accent); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:16px 20px; margin-bottom:20px; font-style:italic; font-size:15px; line-height:1.8; color:var(--text-primary); position:relative; }
+  .quote-block::before { content:'"'; font-size:40px; color:var(--accent); position:absolute; top:-4px; left:10px; font-family:serif; opacity:0.5; }
+
+  .ability-bars { display:flex; flex-direction:column; gap:10px; }
+  .ability-bar { display:flex; align-items:center; gap:12px; }
+  .ability-bar .bar-label { width:70px; font-size:13px; color:var(--text-secondary); text-align:right; flex-shrink:0; }
+  .ability-bar .bar-track { flex:1; height:8px; background:rgba(108,99,255,0.1); border-radius:4px; overflow:hidden; }
+  .ability-bar .bar-fill { height:100%; border-radius:4px; transition:width 1s cubic-bezier(0.25,0.46,0.45,0.94); width:0; }
+  .ability-bar .bar-value { width:32px; font-size:12px; font-weight:700; color:var(--accent-light); }
+
+  .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+  .gallery-grid img { width:100%; border-radius:var(--radius-sm); cursor:pointer; transition:all 0.3s; border:2px solid transparent; }
+  .gallery-grid img:hover { border-color:var(--accent); transform:scale(1.03); box-shadow:0 4px 20px rgba(108,99,255,0.3); }
+
+  /* 库洛牌收藏页面 */
+  .clow-cards-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 30px;
+    background: var(--gradient-3); color: #fff; font-size: 14px; font-weight: 700;
+    cursor: pointer; border: none; transition: all 0.3s; margin-top: 16px;
+  }
+  .clow-cards-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(240,147,251,0.4); }
+  .clow-cards-page { padding: 32px 40px; }
+  .clow-cards-page h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .clow-cards-page h3::before { content: ''; width: 4px; height: 24px; background: var(--gradient-3); border-radius: 2px; }
+  .clow-cards-page .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .clow-filter { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .clow-filter .filter-btn { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s; }
+  .clow-filter .filter-btn.active, .clow-filter .filter-btn:hover {
+    background: rgba(240,147,251,0.2); color: #f093fb; border-color: rgba(240,147,251,0.5); }
+  .clow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+  .clow-card-item { background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; cursor: pointer;
+    border: 1px solid var(--border); transition: all 0.3s; }
+  .clow-card-item:hover { transform: translateY(-6px); border-color: #f093fb; box-shadow: 0 8px 32px rgba(240,147,251,0.2); }
+  .clow-card-item .card-img { width: 100%; aspect-ratio: 3/4; overflow: hidden; position: relative; }
+  .clow-card-item .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+  .clow-card-item:hover .card-img img { transform: scale(1.05); }
+  .clow-card-item .card-img .card-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; }
+  .clow-card-item .card-img .attr-tag { position: absolute; top:6px; left:6px; padding:2px 8px; border-radius:12px;
+    font-size:10px; font-weight:700; backdrop-filter:blur(8px); }
+  .attr-tag.sun { background:rgba(255,170,50,0.75); color:#fff; }
+  .attr-tag.moon { background:rgba(100,120,220,0.75); color:#fff; }
+  .clow-card-item .card-footer { padding: 10px 12px; }
+  .clow-card-item .cn-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .clow-card-item .en-name { font-size: 11px; color: var(--text-muted); }
+  .clow-card-item .ep-tag { font-size: 10px; color: var(--accent-light); margin-top: 4px; }
+  .back-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:20px;
+    font-size:13px; font-weight:600; background:var(--bg-card); color:var(--text-secondary);
+    border:1px solid var(--border); cursor:pointer; transition:all 0.2s; margin-bottom:20px; }
+  .back-btn:hover { background:var(--bg-card-hover); color:var(--text-primary); }
+
+  @media (max-width: 768px) {
+    .sidebar { width:60px; min-width:60px; }
+    .sidebar-title, .anime-item .anime-info, .home-btn span:last-child, .sidebar-divider { display:none; }
+    .home-btn { justify-content:center; padding:12px; }
+    .anime-item { justify-content:center; padding:12px; }
+    .anime-item .anime-icon { width:40px; height:40px; font-size:16px; }
+    .banner-content { flex-direction:column; align-items:center; text-align:center; }
+    .banner-poster { width:120px; height:170px; }
+    .banner-info h1 { font-size:24px; }
+    .profile-layout { flex-direction:column; }
+    .profile-image-box { width:100%; }
+    .anime-synopsis,.characters-section,.seasons-section { padding:24px 20px; }
+    .anime-banner .banner-overlay { padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-effects"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<header class="site-header">
+  <div class="logo">ANIME PROFILE</div>
+  <div class="subtitle">动漫人物档案库</div>
+</header>
+
+<div class="main-layout">
+  <nav class="sidebar">
+    <div class="home-btn" onclick="goHome()">
+      <span class="home-icon">🏠</span>
+      <span>返回首页</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="search-box">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" id="searchInput" placeholder="搜索作品名称..." oninput="filterAnime()">
+      </div>
+    </div>
+    <div class="sidebar-title">作品列表</div>
+    <div id="animeList"></div>
+  </nav>
+  <main class="content-area">
+    <div class="welcome-page" id="welcomePage">
+      <div class="welcome-icon">&#127916;</div>
+      <h2>欢迎来到动漫人物档案库</h2>
+      <p>从左侧选择一部动漫作品，查看详细的人物档案、角色设定和经典图鉴。持续更新中...</p>
+    </div>
+    <div id="animeDetailContainer"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">人物详情</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const animeDatabase = [
+  // ============================================================
+  // 进击的巨人
+  // ============================================================
+  {
+    id: 'aot',
+    name: '进击的巨人',
+    nameJp: '進撃の巨人',
+    icon: '🗡️',
+    tags: ['热血', '黑暗奇幻', '战争', '悬疑', '剧情'],
+    episodes: '全87话 + 8部OVA',
+    year: '2013-2023',
+    studio: 'WIT Studio / MAPPA',
+    rating: '9.8',
+    bannerGradient: 'linear-gradient(135deg, #1a0a0a 0%, #4a1010 40%, #8b2500 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/10/47347.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/10/47347.jpg',
+    posterColor: '#8b2500',
+    seasons: [
+      { title:'第一季', subtitle:'进击的巨人', episodes:'全25话', year:'2013年4月 - 9月', studio:'WIT Studio', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'第二季', subtitle:'进击的巨人 Season 2', episodes:'全12话', year:'2017年4月 - 6月', studio:'WIT Studio', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'第三季 Part.1', subtitle:'进击的巨人 Season 3', episodes:'全12话', year:'2018年7月 - 10月', studio:'WIT Studio', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'第三季 Part.2', subtitle:'进击的巨人 Season 3 Part.2', episodes:'全10话', year:'2019年4月 - 7月', studio:'WIT Studio', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'最终季 Part.1', subtitle:'进击的巨人 The Final Season', episodes:'全16话', year:'2020年12月 - 2021年3月', studio:'MAPPA', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'最终季 Part.2', subtitle:'进击的巨人 The Final Season Part.2', episodes:'全12话', year:'2022年1月 - 4月', studio:'MAPPA', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'完结篇 前篇', subtitle:'进击的巨人 完结篇 前篇', episodes:'1话（特别篇）', year:'2023年3月', studio:'MAPPA', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' },
+      { title:'完结篇 后篇', subtitle:'进击的巨人 完结篇 后篇', episodes:'1话（特别篇）', year:'2023年11月', studio:'MAPPA', link:'https://yhdmtv.top/search/index.html?keyword=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA', linkLabel:'樱花动漫' }
+    ],
+    synopsis: '故事设定在一个被巨人与人类共存的世界。人类为了抵御巨人的侵袭，建造了三重巨大城墙——玛利亚、罗塞和希娜。少年艾伦·耶格尔在目睹母亲被巨人吞食后，立下誓言要驱逐所有巨人。他加入调查兵团，在战斗中发现自己拥有"进击的巨人"之力，而围绕巨人的真相远比想象中更加残酷与复杂。随着故事推进，"海的那边是自由"这一信念逐渐被揭开背后的阴谋与宿命所取代，故事从单纯的人类vs巨人的生存抗争，演变为关于自由、仇恨循环、种族冲突与人性抉择的深刻探讨。',
+    characters: [
+      {
+        name:'艾伦·耶格尔', nameJp:'エレン・イェーガー', cv:'梶裕贵', role:'protagonist', roleLabel:'主角',
+        age:'15岁（前期）→ 19岁（后期）', height:'170cm', weight:'63kg', affiliation:'调查兵团', status:'巨人之力持有者', birthday:'3月30日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #1a472a, #2d7a4f)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/216895.webp',
+        personality:'表面冲动热血，内心却拥有极强的意志力和决断力。从对巨人单纯的憎恨，到逐渐理解世界的残酷真相后，选择用极端手段实现"自由"。性格经历巨大转变：从为保护同伴而战的少年，变为赌上一切推动"地鸣"的灭世者。',
+        background:'出生在帕拉迪岛西甘锡纳区。幼年目睹母亲被巨人吞食，从此立誓驱逐一切巨人。少年时加入第104期训练兵团，以第5名的成绩毕业。在托罗斯特区保卫战中发现自己拥有巨人变身能力。后加入调查兵团，参与了多次壁外远征与重大战役。在地下室发现父亲留下的真相后，世界观彻底崩塌，决定踏上以"地鸣"实现自由的极端道路。',
+        abilities:[{name:'战斗能力',value:98,color:'#6c63ff'},{name:'意志力',value:100,color:'#f5576c'},{name:'智慧',value:82,color:'#00d2ff'},{name:'领导力',value:75,color:'#f093fb'},{name:'立体机动',value:85,color:'#ffd93d'}],
+        titanForms:['进击的巨人','始祖巨人','战锤巨人'], quote:'那一天，人类终于回想起了，曾经一度被巨人所支配的恐惧，以及被囚禁于鸟笼之中的那份屈辱。', gallery:[]
+      },
+      {
+        name:'三笠·阿克曼', nameJp:'ミカサ・アッカーマン', cv:'石川由依', role:'protagonist', roleLabel:'主角',
+        age:'15岁 → 19岁', height:'170cm', weight:'68kg', affiliation:'调查兵团', status:'阿克曼一族', birthday:'2月10日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #4a1530, #8b2252)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/215563.webp',
+        personality:'沉着冷静、寡言少语，但内心极其温柔。将艾伦视为生命中最重要的人，拥有为保护他而战不惜一切的决心。战斗时展现出超凡的冷静判断力和压倒性实力，被誉为"人类最强士兵之一"。',
+        background:'阿克曼一族的后裔，东洋混血儿。幼年父母被拐卖团伙杀害，被艾伦一家收养。在艾伦为救她杀死人贩子的那一刻起，便与艾伦结下了不可分割的羁绊。104期训练兵团首席毕业生，实力远超同期。在调查兵团中是核心战力之一，多次在关键战役中力挽狂澜。',
+        abilities:[{name:'战斗能力',value:100,color:'#6c63ff'},{name:'意志力',value:92,color:'#f5576c'},{name:'智慧',value:78,color:'#00d2ff'},{name:'领导力',value:65,color:'#f093fb'},{name:'立体机动',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'这个世界是残酷的，但也是美丽的。', gallery:[]
+      },
+      {
+        name:'阿尔敏·阿诺德', nameJp:'アルミン・アルレルト', cv:'井上麻里奈', role:'protagonist', roleLabel:'主角',
+        age:'15岁 → 19岁', height:'163cm', weight:'55kg', affiliation:'调查兵团', status:'超大型巨人继承者', birthday:'11月3日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #0f3460, #1a73e8)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/220267.webp',
+        personality:'温和内敛、心思细腻，拥有超乎常人的分析能力和战略头脑。虽然身体素质在训练兵团中垫底，但凭借卓越的洞察力和勇气，多次在绝境中找到突破口。',
+        background:'艾伦的青梅竹马，加入训练兵团后，虽然战斗技能排名靠后，但战略分析能力出众。在夺回玛利亚墙壁作战中提出利用巨人蒸汽爆破的战术，被埃尔文团长采纳。为救艾伦吞下超大型巨人的脊髓液而获得巨人之力。',
+        abilities:[{name:'战斗能力',value:35,color:'#6c63ff'},{name:'意志力',value:85,color:'#f5576c'},{name:'智慧',value:100,color:'#00d2ff'},{name:'领导力',value:90,color:'#f093fb'},{name:'立体机动',value:30,color:'#ffd93d'}],
+        titanForms:['超大型巨人'], quote:'如果不去追求的话，就什么也得不到。正因为如此，这世界才如此美丽。', gallery:[]
+      },
+      {
+        name:'利威尔·阿克曼', nameJp:'リヴァイ・アッカーマン', cv:'神谷浩史', role:'supporting', roleLabel:'核心配角',
+        age:'30代后半推测', height:'160cm', weight:'65kg', affiliation:'调查兵团特别作战班班长', status:'人类最强士兵', birthday:'12月25日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #1a1a2e, #434373)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/241413.webp',
+        personality:'表面冷漠毒舌、极度洁癖，实际上拥有强烈的正义感和对部下的关爱。被称为"人类最强士兵"，实力凌驾于所有巨人之上。',
+        background:'阿克曼一族的末裔，幼年在地下街由凯尼抚养长大，学会了一套独特的战斗技巧。被埃尔文说服加入调查兵团后，成为特别作战班班长。以压倒性的战斗实力多次击杀巨人，被称为"兵长"。',
+        abilities:[{name:'战斗能力',value:100,color:'#6c63ff'},{name:'意志力',value:95,color:'#f5576c'},{name:'智慧',value:88,color:'#00d2ff'},{name:'领导力',value:92,color:'#f093fb'},{name:'立体机动',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'选择不会后悔的道路吧。', gallery:[]
+      },
+      {
+        name:'埃尔文·史密斯', nameJp:'エルヴィン・スミス', cv:'小野大辅', role:'supporting', roleLabel:'核心配角',
+        age:'推测35-40岁', height:'188cm', weight:'92kg', affiliation:'调查兵团第十三代团长', status:'已故', birthday:'10月14日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #2d1b4e, #6b3fa0)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/559023.webp',
+        personality:'沉着睿智、胸怀大志，是一个将信念置于个人生命之上的理想主义者。拥有卓越的战略眼光和领袖魅力，能够令部下甘愿为其赴死。',
+        background:'出身普通家庭，父亲因提出"墙壁内人类记忆被篡改"的假说而被宪兵团暗杀。继承父亲的遗志加入调查兵团，一路升任团长。在谢利加尔战役中率领新兵发起自杀式冲锋，壮烈牺牲。',
+        abilities:[{name:'战斗能力',value:78,color:'#6c63ff'},{name:'意志力',value:96,color:'#f5576c'},{name:'智慧',value:100,color:'#00d2ff'},{name:'领导力',value:100,color:'#f093fb'},{name:'立体机动',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'献出心脏吧！', gallery:[]
+      },
+      {
+        name:'韩吉·佐耶', nameJp:'ハンジ・ゾエ', cv:'朴璐美', role:'supporting', roleLabel:'核心配角',
+        age:'不详', height:'170cm', weight:'60kg', affiliation:'调查兵团第十四代团长', status:'已故', birthday:'9月5日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #1a3a1a, #4a8b4a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/15/208637.webp',
+        personality:'狂热于巨人研究的科学家型军人，对知识有近乎疯狂的求知欲。性格开朗幽默，在严肃的调查兵团中是少有的气氛调节者。',
+        background:'调查兵团的科学研究负责人，对巨人有着近乎痴迷的研究热情。在埃尔文牺牲后继任团长。在故事后期选择以自己的生命为代价争取到了阻止地鸣的关键时间。',
+        abilities:[{name:'战斗能力',value:72,color:'#6c63ff'},{name:'意志力',value:94,color:'#f5576c'},{name:'智慧',value:96,color:'#00d2ff'},{name:'领导力',value:88,color:'#f093fb'},{name:'立体机动',value:76,color:'#ffd93d'}],
+        titanForms:[], quote:'巨人是可以被理解的！他们曾经也是人类啊！', gallery:[]
+      },
+      {
+        name:'莱纳·布朗', nameJp:'ライナー・ブラウン', cv:'细谷佳正', role:'antagonist', roleLabel:'敌方角色',
+        age:'17岁 → 21岁', height:'185cm', weight:'83kg', affiliation:'马莱战士队', status:'铠之巨人继承者', birthday:'8月1日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #5c3d1a, #b87333)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/206489.webp',
+        personality:'表面稳重可靠的"大哥"，因双重身份的分裂而深受心理创伤。内心深处只是一个想要被认可的普通少年，被战争的残酷推向了对立面。',
+        background:'马莱的艾尔迪亚人战士候补生，以训练兵团第2名的成绩毕业后潜入调查兵团。在破坏罗塞墙壁后暴露身份。后期回到马莱参与对帕拉迪岛的联合攻势，最终选择协助阻止艾伦。',
+        abilities:[{name:'战斗能力',value:90,color:'#6c63ff'},{name:'意志力',value:70,color:'#f5576c'},{name:'智慧',value:72,color:'#00d2ff'},{name:'领导力',value:68,color:'#f093fb'},{name:'立体机动',value:78,color:'#ffd93d'}],
+        titanForms:['铠之巨人'], quote:'我可是战士啊……不，我是士兵……我，莱纳·布朗，是战士！', gallery:[]
+      },
+      {
+        name:'贝尔托特·胡佛', nameJp:'ベルトルト・フーバー', cv:'桥诘知久', role:'antagonist', roleLabel:'敌方角色',
+        age:'17岁', height:'192cm', weight:'85kg', affiliation:'马莱战士队', status:'已故', birthday:'12月30日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #3d1a0a, #d4650a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/206409.webp',
+        personality:'内向寡言、性格温和，总在莱纳身后默默跟随。承担着"超大型巨人"这一最强毁灭武器的使命，却总是一副淡然模样。',
+        background:'马莱战士队成员，继承超大型巨人后与莱纳、阿尼一起被派往帕拉迪岛。踢破内壁引发巨人入侵，是整个悲剧的导火索之一。后被阿尔敏击败，将超大型巨人传给了阿尔敏。',
+        abilities:[{name:'战斗能力',value:75,color:'#6c63ff'},{name:'意志力',value:80,color:'#f5576c'},{name:'智慧',value:70,color:'#00d2ff'},{name:'领导力',value:45,color:'#f093fb'},{name:'立体机动',value:65,color:'#ffd93d'}],
+        titanForms:['超大型巨人'], quote:'……对不起。', gallery:[]
+      },
+      {
+        name:'让·基尔希斯坦', nameJp:'ジャン・キルシュタイン', cv:'谷山纪章', role:'supporting', roleLabel:'核心配角',
+        age:'15岁 → 19岁', height:'175cm', weight:'65kg', affiliation:'调查兵团', status:'存活', birthday:'4月7日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #3d2a0a, #8b6914)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/216893.webp',
+        personality:'表面嘴臭毒舌、爱讽刺，实际上非常关心同伴。最初想加入宪兵团过上安逸生活，但在目睹同伴牺牲后逐渐成长为可靠的战士。对三笠有好感却不敢表白。',
+        background:'104期训练兵团第6名毕业。原本一心想加入宪兵团，后来在调查兵团的历练中成熟起来。在多次战役中发挥重要作用，尤其是在阻止艾伦方面起到了关键作用。',
+        abilities:[{name:'战斗能力',value:75,color:'#6c63ff'},{name:'意志力',value:78,color:'#f5576c'},{name:'智慧',value:76,color:'#00d2ff'},{name:'领导力',value:70,color:'#f093fb'},{name:'立体机动',value:78,color:'#ffd93d'}],
+        titanForms:[], quote:'你以为你能一个人拯救所有人吗？', gallery:[]
+      },
+      {
+        name:'莎夏·布劳斯', nameJp:'サシャ・ブラウス', cv:'小林ゆう', role:'supporting', roleLabel:'核心配角',
+        age:'15岁 → 18岁（已故）', height:'168cm', weight:'55kg', affiliation:'调查兵团', status:'已故', birthday:'7月26日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #2a3a1a, #5a7a2a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/251937.webp',
+        personality:'出身猎户家庭的天然呆少女，对食物有着异常执念。性格天真善良、乐观开朗，是团队中的开心果。但在战斗中展现出惊人的直觉和射击能力。',
+        background:'来自南方山区的狩猎家族，因为向往城市生活而加入训练兵团。外表看起来笨拙迟钝，实际上拥有超凡的直觉和运动天赋。在利威尔班中是重要的战斗成员，后在马莱战役中为救小孩而牺牲。',
+        abilities:[{name:'战斗能力',value:76,color:'#6c63ff'},{name:'意志力',value:80,color:'#f5576c'},{name:'智慧',value:60,color:'#00d2ff'},{name:'领导力',value:40,color:'#f093fb'},{name:'立体机动',value:74,color:'#ffd93d'}],
+        titanForms:[], quote:'肉……是生命的源泉啊……', gallery:[]
+      },
+      {
+        name:'阿尼·雷恩哈特', nameJp:'アニ・レオンハート', cv:'日笠阳子', role:'antagonist', roleLabel:'敌方角色',
+        age:'15岁', height:'153cm', weight:'42kg', affiliation:'马莱战士队', status:'水晶中沉睡', birthday:'3月31日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #1a2a4a, #4a6a9a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/206357.webp',
+        personality:'性格冷淡寡言，格斗技术极其精湛。看似对一切漠不关心，但内心深处对自己的所作所为怀有矛盾和愧疚。在执行任务期间与104期同学建立了真挚的友谊。',
+        background:'马莱战士队成员，继承女巨人之力。潜入训练兵团后以第4名的成绩毕业。在女巨人捕获作战中暴露身份，利用硬质化能力自我封印于水晶中。多年后被利威尔释放，协助阻止地鸣。',
+        abilities:[{name:'战斗能力',value:92,color:'#6c63ff'},{name:'意志力',value:75,color:'#f5576c'},{name:'智慧',value:80,color:'#00d2ff'},{name:'领导力',value:50,color:'#f093fb'},{name:'立体机动',value:82,color:'#ffd93d'}],
+        titanForms:['女巨人'], quote:'不要太相信别人，也不要被别人左右。', gallery:[]
+      },
+      {
+        name:'康尼·斯普林格', nameJp:'コニー・スプリンガー', cv:'下野纮', role:'supporting', roleLabel:'核心配角',
+        age:'15岁 → 19岁', height:'158cm', weight:'58kg', affiliation:'调查兵团', status:'存活', birthday:'5月2日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #3a1a3a, #7a3a7a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/208109.webp',
+        personality:'性格开朗直率，是团队中的搞笑担当。虽然身材矮小、头脑简单，但非常重视同伴之间的羁绊，战斗时表现出不输给任何人的勇气。',
+        background:'来自拉加哥村的少年，104期训练兵团毕业生。在调查兵团的历练中逐渐成长为可靠的战士。其故乡变为无巨人区后，发现了母亲变成无垢巨人的残酷真相。',
+        abilities:[{name:'战斗能力',value:70,color:'#6c63ff'},{name:'意志力',value:78,color:'#f5576c'},{name:'智慧',value:55,color:'#00d2ff'},{name:'领导力',value:50,color:'#f093fb'},{name:'立体机动',value:72,color:'#ffd93d'}],
+        titanForms:[], quote:'不管怎样，我是不会放弃同伴的！', gallery:[]
+      },
+      {
+        name:'希斯特莉亚·雷斯', nameJp:'ヒストリア・レイス', cv:'水濑祈', role:'supporting', roleLabel:'核心配角',
+        age:'15岁 → 19岁', height:'145cm', weight:'42kg', affiliation:'调查兵团 / 帕拉迪岛女王', status:'帕拉迪岛女王', birthday:'1月15日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #3a2a1a, #c9a84c)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/216967.webp',
+        personality:'原名克里斯塔，因不幸福的童年而养成了讨好型人格。在经历身份揭露和自我觉醒后，展现出坚强果敢的一面，最终成为帕拉迪岛的女王。',
+        background:'雷斯王家的私生女，被送往训练兵团。在揭露真实身份后被迫继承始祖巨人之力。在奥尔福德区决战中亲手杀死父亲罗德·雷斯，随后登基成为女王，致力于改善孤儿福利。',
+        abilities:[{name:'战斗能力',value:65,color:'#6c63ff'},{name:'意志力',value:85,color:'#f5576c'},{name:'智慧',value:70,color:'#00d2ff'},{name:'领导力',value:82,color:'#f093fb'},{name:'立体机动',value:68,color:'#ffd93d'}],
+        titanForms:[], quote:'我不会再让任何人决定我的命运。', gallery:[]
+      },
+      {
+        name:'格里沙·耶格尔', nameJp:'グリシャ・イェーガー', cv:'土田大', role:'supporting', roleLabel:'重要角色',
+        age:'享年不详', height:'182cm', weight:'78kg', affiliation:'艾尔迪亚复权派 / 调查兵团（帕拉迪岛）', status:'已故', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a3a, #4a4a8a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/206441.webp',
+        personality:'艾伦的父亲，曾是一名理想主义的医生。在目睹妹妹被马莱士兵带走后投身复权运动，性格从温和变得决绝，为了儿子的未来甘愿做出残酷的选择。',
+        background:'原本生活在马莱的艾尔迪亚人，妹妹菲被带到乐园后生死不明。加入艾尔迪亚复权派，被枭（进击的巨人）选中并继承巨人之力。来到帕拉迪岛后与黛娜结婚生子，在发现妻子被变为巨人后崩溃。最终将进击的巨人和始祖之力传给艾伦。',
+        abilities:[{name:'战斗能力',value:60,color:'#6c63ff'},{name:'意志力',value:90,color:'#f5576c'},{name:'智慧',value:85,color:'#00d2ff'},{name:'领导力',value:65,color:'#f093fb'},{name:'立体机动',value:40,color:'#ffd93d'}],
+        titanForms:['进击的巨人','始祖巨人（未发动）'], quote:'……为了你，艾伦。活下去。', gallery:[]
+      },
+      {
+        name:'皮克·芬格尔', nameJp:'ピーク・フィンガー', cv:'足立友', role:'antagonist', roleLabel:'敌方角色',
+        age:'不详（推测20+）', height:'155cm', weight:'46kg', affiliation:'马莱战士队', status:'存活', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #0a2a2a, #2a6a6a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/478143.webp',
+        personality:'冷静务实、观察力极强的智将型战士。继承车力巨人后长期在马莱军队服役，与莱纳有着亦师亦友的关系。比起热血更重视战略和生存。',
+        background:'马莱战士队成员，继承车力巨人。在马莱的军事行动中扮演重要的侦察和支援角色。在帕拉迪岛与莱纳重逢后，对艾伦发动地鸣的态度十分矛盾，最终选择加入反地鸣联盟。',
+        abilities:[{name:'战斗能力',value:70,color:'#6c63ff'},{name:'意志力',value:80,color:'#f5576c'},{name:'智慧',value:95,color:'#00d2ff'},{name:'领导力',value:78,color:'#f093fb'},{name:'立体机动',value:45,color:'#ffd93d'}],
+        titanForms:['车力巨人'], quote:'不管你在哪一边，莱纳。', gallery:[]
+      },
+      {
+        name:'加比·布朗', nameJp:'ガビ・ブラウン', cv:'佐仓绫音', role:'antagonist', roleLabel:'敌方角色',
+        age:'12岁', height:'152cm', weight:'42kg', affiliation:'马莱战士候补生', status:'存活', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3a1a0a, #8b5a2a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/342937.webp',
+        personality:'莱纳的表妹，马莱军国主义教育的产物。从小被灌输"艾尔迪亚人是恶魔"的思想，对帕拉迪岛充满仇恨。但在与帕拉迪岛居民接触后，世界观逐渐动摇。',
+        background:'马莱的艾尔迪亚人战士候补生，成绩优异，被寄予厚望。在中东联合战争中表现出色。潜入帕拉迪岛后意外与调查兵团成员建立联系，在亲眼看到两边的普通人都一样善良后，开始质疑自己一直以来的信仰。',
+        abilities:[{name:'战斗能力',value:72,color:'#6c63ff'},{name:'意志力',value:78,color:'#f5576c'},{name:'智慧',value:65,color:'#00d2ff'},{name:'领导力',value:55,color:'#f093fb'},{name:'立体机动',value:60,color:'#ffd93d'}],
+        titanForms:[], quote:'恶魔岛的恶魔也和我们一样……有家人、有朋友……', gallery:[]
+      },
+      {
+        name:'法尔可·格莱斯', nameJp:'ファルコ・グライス', cv:'花江夏树', role:'supporting', roleLabel:'重要角色',
+        age:'12岁', height:'148cm', weight:'40kg', affiliation:'马莱战士候补生', status:'颚之巨人继承者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a2a3a, #4a6a8a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/394417.webp',
+        personality:'温柔善良的少年，为了救治哥哥而拼命争取继承巨人的资格。性格内向但内心坚定，对加比有着默默守护的深情。',
+        background:'马莱战士候补生，成绩仅次于加比。在帕拉迪岛被奇袭后流落他乡，与调查兵团成员结伴而行。后在混乱中继承了颚之巨人之力。性格始终保持着善良的本质。',
+        abilities:[{name:'战斗能力',value:60,color:'#6c63ff'},{name:'意志力',value:85,color:'#f5576c'},{name:'智慧',value:70,color:'#00d2ff'},{name:'领导力',value:50,color:'#f093fb'},{name:'立体机动',value:50,color:'#ffd93d'}],
+        titanForms:['颚之巨人'], quote:'我想让哥哥好起来，仅此而已。', gallery:[]
+      }
+    ]
+  },
+
+  // ============================================================
+  // 魔卡少女樱（百变小樱）
+  // ============================================================
+  {
+    id: 'ccs',
+    name: '魔卡少女樱',
+    nameJp:'カードキャプターさくら',
+    icon: '🌸',
+    tags: ['魔法少女', '恋爱', '奇幻', '日常', '少女'],
+    episodes: '全70话 + 2季（透明牌22话）+ 2部剧场版 + OVA',
+    year: '1998-2018',
+    studio: 'MADHOUSE',
+    rating: '9.6',
+    bannerGradient: 'linear-gradient(135deg, #3a1a4a 0%, #c84fa0 40%, #ffb6d9 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/8/60781.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/8/60781.jpg',
+    posterColor: '#c84fa0',
+    seasons: [
+      { title:'第一季', subtitle:'魔卡少女樱（库洛牌篇 + 樱牌篇）', episodes:'全70话', year:'1998年4月 - 2000年3月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md3756', linkLabel:'Bilibili' },
+      { title:'第二季', subtitle:'魔卡少女樱 透明牌篇（Clear Card篇）', episodes:'全22话', year:'2018年1月 - 6月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md28237023', linkLabel:'Bilibili' },
+      { title:'剧场版1', subtitle:'魔卡少女樱 剧场版（香港之旅）', episodes:'1话', year:'1999年8月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md2270', linkLabel:'Bilibili' },
+      { title:'剧场版2', subtitle:'魔卡少女樱 被封印的卡片', episodes:'1话', year:'2000年7月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md80072', linkLabel:'Bilibili' },
+      { title:'OVA', subtitle:'知世的活跃影像日记', episodes:'全3话', year:'2000年1月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md3858', linkLabel:'Bilibili' },
+      { title:'OAD', subtitle:'透明牌篇 序章 小樱与两只小熊', episodes:'1话', year:'2017年9月', studio:'MADHOUSE', link:'https://www.bilibili.com/bangumi/media/md80072', linkLabel:'Bilibili' }
+    ],
+    synopsis: '小学四年级的木之本樱是一个活泼开朗的女孩。某天她在父亲的书房中发现了一本名为"封印之书"的古老书籍，意外将里面的库洛牌释放到了世间。守护封印之书的可鲁贝洛斯（小可）任命樱为"库洛魔法使"，要求她将散落的库洛牌一一收集回来。在好友大道寺知世的帮助下，以及神秘转学生李小狼的竞争与合作中，樱开启了一段充满魔法与冒险的旅程。每张库洛牌都拥有不同的魔法力量，樱需要用自己的方式与它们建立羁绊，最终面对库洛·里多的遗志考验。',
+    characters: [
+      {
+        name:'木之本樱', nameJp:'木之本 さくら', cv:'丹下樱', role:'protagonist', roleLabel:'主角',
+        age:'10岁', height:'约140cm', weight:'不详', affiliation:'友枝小学四年级', status:'库洛魔法使 / 新主人', birthday:'4月1日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #ff69b4, #ff1493)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/86417.webp',
+        personality:'活泼开朗、天真善良，虽然胆子小但遇到重要的事情会变得非常勇敢。感情丰富且善解人意，对身边的人都怀有真诚的关心。拥有极强的亲和力和魔法天赋。',
+        background:'友枝小学四年级学生，运动万能且擅长花样滑冰。在父亲的书房中发现封印之书后，意外释放了库洛牌，被可鲁贝洛斯任命为"库洛魔法使"。在收集库洛牌的过程中不断成长，最终创造了属于自己的"樱牌"。',
+        abilities:[{name:'魔法能力',value:95,color:'#ff69b4'},{name:'运动能力',value:90,color:'#ff1493'},{name:'勇气',value:85,color:'#00d2ff'},{name:'共情力',value:98,color:'#f093fb'},{name:'直觉力',value:88,color:'#ffd93d'}],
+        titanForms:[], quote:'我一定会做到的！隐藏着黑暗力量的钥匙啊，在我面前显示你真正的力量！', gallery:[]
+      },
+      {
+        name:'李小狼', nameJp:'李 小狼', cv:'绪方惠美', role:'protagonist', roleLabel:'主角',
+        age:'10岁', height:'约138cm', weight:'不详', affiliation:'友枝小学四年级', status:'库洛里多的后代 / 樱牌持有者', birthday:'7月13日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #1a3a1a, #3a7a3a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/7/234415.webp',
+        personality:'表面严肃冷淡，内心温柔细腻。作为库洛里多的后代，最初以收集库洛牌为使命来到日本。在过程中逐渐被樱的纯真打动，从竞争对手变为最坚实的伙伴。',
+        background:'来自香港的库洛里多家族后代，被派来收集库洛牌。转学到友枝小学四年级，最初对樱持竞争态度。在相处中逐渐爱上樱，最终将自己的牌也托付给了她。',
+        abilities:[{name:'魔法能力',value:90,color:'#ff69b4'},{name:'武术',value:85,color:'#ff1493'},{name:'勇气',value:82,color:'#00d2ff'},{name:'毅力',value:92,color:'#f093fb'},{name:'直觉力',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'我不是在和你竞争……我只是想帮助你。', gallery:[]
+      },
+      {
+        name:'大道寺知世', nameJp:'大道寺 知世', cv:'岩男润子', role:'protagonist', roleLabel:'主角',
+        age:'10岁', height:'不详', weight:'不详', affiliation:'友枝小学四年级', status:'樱的搭档', birthday:'9月3日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #4a1a5a, #8a4aaa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/7/55687.webp',
+        personality:'温柔优雅、善解人意，对樱怀有超越友谊的深情。拥有极高的歌唱天赋和丰富的家庭资源（家境富裕）。最大的快乐就是为樱设计战斗服装并用摄像机记录下一切。',
+        background:'大道寺财团的大小姐，是樱的同班同学兼最好的朋友。得知樱收集库洛牌的秘密后，全力支持她，为她设计了一系列华丽的战斗服装，并总是带着摄像机出现在现场。',
+        abilities:[{name:'魔法能力',value:15,color:'#ff69b4'},{name:'歌唱',value:98,color:'#ff1493'},{name:'设计',value:95,color:'#00d2ff'},{name:'观察力',value:88,color:'#f093fb'},{name:'勇气',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'能见到小樱穿上我做的衣服战斗的样子，是最幸福的事。', gallery:[]
+      },
+      {
+        name:'可鲁贝洛斯', nameJp:'ケルベロス', cv:'久川绫（小可）/绪方惠美（伪装态）', role:'supporting', roleLabel:'核心配角',
+        age:'年龄不详（远古存在）', height:'约10cm（小可态）/巨大（真身）', weight:'不详', affiliation:'封印之书守护者', status:'月之审判官', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #5a3a0a, #c89a20)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/72106.webp',
+        personality:'平时是毛绒玩偶形态的小可，性格贪吃爱玩、大大咧咧。真实形态为巨大的狮子般审判官，性格严肃认真。两种形态的反差极大。',
+        background:'库洛·里多创造的封印之书守护者，掌管太阳属性。在库洛牌被释放后唤醒了樱成为魔法使的使命。平时以可爱的玩偶形态生活，关键时刻恢复真身。',
+        abilities:[{name:'魔法能力',value:88,color:'#ff69b4'},{name:'战斗力',value:92,color:'#ff1493'},{name:'知识',value:90,color:'#00d2ff'},{name:'责任感',value:75,color:'#f093fb'},{name:'直觉力',value:85,color:'#ffd93d'}],
+        titanForms:[], quote:'身为选定的库洛魔法使，你一定要把所有的牌收集回来！', gallery:[]
+      },
+      {
+        name:'月城雪兔 / 审判者月', nameJp:'月城 雪兎 / ユエ', cv:'绪方惠美', role:'supporting', roleLabel:'核心配角',
+        age:'外表16岁 / 实际年龄不详', height:'约175cm', weight:'不详', affiliation:'柊泽艾利欧的创造物 / 月之审判官', status:'月之审判官', birthday:'12月25日', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a2a4a, #6a8aba)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/79860.webp',
+        personality:'雪兔形态温柔亲切、不拘小节，是桃矢最好的朋友。月的形态冷酷高傲、严格公正。两种人格共享一个身体，但意识相对独立。',
+        background:'库洛·里多创造的另一名封印之书守护者，掌管月亮属性。平时以人类月城雪兔的身份生活在世间，作为木之本桃矢的好友。在最终审判中展现出审判者月的真面目。',
+        abilities:[{name:'魔法能力',value:92,color:'#ff69b4'},{name:'战斗力',value:95,color:'#ff1493'},{name:'智慧',value:85,color:'#00d2ff'},{name:'洞察力',value:90,color:'#f093fb'},{name:'伪装力',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'……我并不是不想和你做朋友，只是不能偏袒你。', gallery:[]
+      },
+      {
+        name:'木之本桃矢', nameJp:'木之本 桃矢', cv:'关智一', role:'supporting', roleLabel:'重要角色',
+        age:'17岁', height:'约175cm', weight:'不详', affiliation:'友枝高中二年级', status:'拥有感知超能力', birthday:'2月29日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #2a1a1a, #8a4a4a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/81445.webp',
+        personality:'表面上总是欺负妹妹的毒舌哥哥，实际上非常疼爱樱。拥有看到灵体和感知超自然的特殊能力。性格沉稳可靠，对自己的一切都十分坦然。',
+        background:'木之本家的长子，在母亲去世后承担了照顾家庭的责任。一直以自己的方式默默保护着樱。与雪兔之间有着超越友情的感情。为了让月恢复力量，付出了巨大的代价。',
+        abilities:[{name:'魔法能力',value:30,color:'#ff69b4'},{name:'感知力',value:95,color:'#ff1493'},{name:'体力',value:88,color:'#00d2ff'},{name:'保护欲',value:98,color:'#f093fb'},{name:'洞察力',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'樱，不要担心，我永远在你身边。', gallery:[]
+      },
+      {
+        name:'木之本藤隆', nameJp:'木之本 藤隆', cv:'宫崎一成', role:'supporting', roleLabel:'重要角色',
+        age:'不详（30+）', height:'约180cm', weight:'不详', affiliation:'友枝大学考古学教授', status:'存活', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a2a1a, #5a7a5a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/75610.webp',
+        personality:'温文尔雅的学者型父亲，独自抚养两个孩子。性格温和包容，擅长烹饪和料理家务。虽然表面平凡，但拥有敏锐的感知力。',
+        background:'木之本家的父亲，大学考古学教授。妻子木之本抚子去世后独自抚养樱和桃矢。虽然无法看到灵体，但能感受到妻子的存在。是樱最温暖的依靠。',
+        abilities:[{name:'魔法能力',value:10,color:'#ff69b4'},{name:'学识',value:98,color:'#ff1493'},{name:'厨艺',value:95,color:'#00d2ff'},{name:'感知力',value:70,color:'#f093fb'},{name:'温柔',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'今天的早餐也很美味哦，樱。', gallery:[]
+      },
+      {
+        name:'李莓铃', nameJp:'李 苺鈴', cv:'野上尤加奈', role:'supporting', roleLabel:'重要角色',
+        age:'10岁', height:'约135cm', weight:'不详', affiliation:'友枝小学', status:'回到香港', birthday:'3月25日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #4a0a1a, #c83a5a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/70024.webp',
+        personality:'活泼好强、性格直率，是李小龙的超级粉丝。从小就喜欢小狼，为了和他在一起而从香港追到日本。虽然有时任性，但本质上是个善良热情的女孩。',
+        background:'李小狼的表妹和未婚妻（自我认定），从香港来到日本和小狼一起生活。虽然不会使用魔法，但拥有出色的武术功底。在得知小狼喜欢樱后虽然失落，但最终大方退出。',
+        abilities:[{name:'魔法能力',value:0,color:'#ff69b4'},{name:'武术',value:85,color:'#ff1493'},{name:'勇气',value:78,color:'#00d2ff'},{name:'热情',value:95,color:'#f093fb'},{name:'坚持',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'小狼是我的未婚妻！不许你们接近他！', gallery:[]
+      },
+      {
+        name:'柊泽艾利欧', nameJp:'柊澤 エリオル', cv:'佐佐木望', role:'antagonist', roleLabel:'特殊角色',
+        age:'外表10岁 / 实际为库洛·里多转世', height:'约140cm', weight:'不详', affiliation:'友枝小学五年级', status:'半分之库洛里多', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a3a, #5a4a8a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/81228.webp',
+        personality:'外表温和优雅，实际上拥有库洛·里多的记忆和魔法力量。他的行为看似在给樱制造困难，实际上都是在为樱的成长创造条件。',
+        background:'库洛·里多转世的半分存在，同时拥有另一名英国魔法师（艾利欧）的记忆。为了让樱的力量能完全继承库洛牌，制造了一系列事件来考验她。',
+        abilities:[{name:'魔法能力',value:100,color:'#ff69b4'},{name:'智慧',value:98,color:'#ff1493'},{name:'预言',value:95,color:'#00d2ff'},{name:'操纵力',value:90,color:'#f093fb'},{name:'同理心',value:85,color:'#ffd93d'}],
+        titanForms:[], quote:'樱，你一定能创造属于自己的未来。', gallery:[]
+      },
+      {
+        name:'观月歌帆', nameJp:'観月 歩帆', cv:'筱原惠美', role:'supporting', roleLabel:'重要角色',
+        age:'约25岁', height:'约165cm', weight:'不详', affiliation:'友枝小学教师', status:'前往英国留学', birthday:'5月28日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #2a0a2a, #7a3a7a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/91336.webp',
+        personality:'温柔成熟的女性教师，表面看起来神秘莫测。作为库洛·里多旧识的后代，背负着某种使命。对桃矢怀有特殊的感情。',
+        background:'友枝小学的数学教师，柊泽艾利欧的协助者。拥有月之铃等魔法道具。在库洛牌收集完成后离开日本前往英国，临别前将月之铃托付给了桃矢。',
+        abilities:[{name:'魔法能力',value:65,color:'#ff69b4'},{name:'智慧',value:90,color:'#ff1493'},{name:'洞察力',value:85,color:'#00d2ff'},{name:'温柔',value:92,color:'#f093fb'},{name:'勇气',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'……我来到这里，是有必须完成的事情。', gallery:[]
+      },
+      {
+        name:'木之本抚子', nameJp:'木之本 撫子', cv:'久川绫', role:'supporting', roleLabel:'重要角色',
+        age:'享年不详（去世时27岁）', height:'约165cm', weight:'不详', affiliation:'无', status:'已故（享年27岁）', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3a1a2a, #9a5a7a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/70016.webp',
+        personality:'温柔美丽、才华横溢的女性。是樱在性格上最相似的人。即使在生病期间也保持乐观的态度，对家人的爱深沉而坚定。',
+        background:'木之本樱的已故母亲，天赋异禀的模特和学者。在27岁时因病去世。虽然肉身已经离去，但她的灵魂依然守护着家人，经常出现在樱花树下或镜中。',
+        abilities:[{name:'魔法能力',value:50,color:'#ff69b4'},{name:'艺术',value:95,color:'#ff1493'},{name:'温柔',value:100,color:'#00d2ff'},{name:'守护',value:90,color:'#f093fb'},{name:'直觉力',value:85,color:'#ffd93d'}],
+        titanForms:[], quote:'即使我不在了，也永远会守护着你们。', gallery:[]
+      },
+      {
+        name:'柳泽奈绪子', nameJp:'柳沢 奈緒子', cv:'川上伦子', role:'supporting', roleLabel:'配角',
+        age:'10岁', height:'不详', weight:'不详', affiliation:'友枝小学四年级', status:'存活', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a2a3a, #4a7a5a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/55198.webp',
+        personality:'活泼开朗、好奇心旺盛。是班里的活跃气氛担当，和樱、知世是最好的朋友之一。有着丰富的课外知识。',
+        background:'友枝小学四年级学生，樱的同班同学。虽然不是魔法世界的成员，但一直陪伴在樱身边。',
+        abilities:[{name:'魔法能力',value:0,color:'#ff69b4'},{name:'运动',value:65,color:'#ff1493'},{name:'好奇心',value:95,color:'#00d2ff'},{name:'友谊',value:88,color:'#f093fb'},{name:'勇气',value:72,color:'#ffd93d'}],
+        titanForms:[], quote:'哇，好厉害！樱又在做什么有趣的事呢？', gallery:[]
+      },
+      {
+        name:'山崎贵史', nameJp:'山崎 貴史', cv:'金井美香', role:'supporting', roleLabel:'配角',
+        age:'10岁', height:'不详', weight:'不详', affiliation:'友枝小学四年级', status:'存活', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a2a1a, #6a6a3a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/55709.webp',
+        personality:'班里的"说谎大王"，经常一本正经地编造各种荒诞的故事，但偶尔也会说出真实的事实。',
+        background:'友枝小学四年级学生，和莓铃是同桌兼好友。虽然有说谎的习惯，但关键时刻还是很可靠的。',
+        abilities:[{name:'魔法能力',value:0,color:'#ff69b4'},{name:'表演',value:90,color:'#ff1493'},{name:'知识',value:70,color:'#00d2ff'},{name:'幽默',value:95,color:'#f093fb'},{name:'勇气',value:65,color:'#ffd93d'}],
+        titanForms:[], quote:'真的！千真万确！我爷爷的爷爷可是见过怪兽的！', gallery:[]
+      },
+      {
+        name:'库洛·里多', nameJp:'クロウ・リード', cv:'绪方惠美（TV）/有本钦隆（游戏）', role:'supporting', roleLabel:'传说角色',
+        age:'已故', height:'不详', weight:'不详', affiliation:'伟大的魔法师', status:'已故', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a2a, #5a3a8a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/81882.webp',
+        personality:'世界上最强大的魔法师之一，性格深不可测。融合了东西方魔法体系，创造出了库洛牌。拥有预见未来的能力。',
+        background:'创造出库洛牌的伟大魔法师，融合了东方与西方的魔法。知道自己死后世界会发生剧变，提前做了缜密的安排。将可鲁贝洛斯和月设为守护者，最终让自己的灵魂分裂为艾利欧和柊泽。',
+        abilities:[{name:'魔法能力',value:100,color:'#ff69b4'},{name:'智慧',value:100,color:'#ff1493'},{name:'预言',value:100,color:'#00d2ff'},{name:'创造力',value:100,color:'#f093fb'},{name:'大局观',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'我亲爱的 successors……愿你们的道路充满光明。', gallery:[]
+      }
+    ]
+  },
+
+  // ============================================================
+  // 怪盗圣少女
+  // ============================================================
+  {
+    id: 'sttail',
+    name: '怪盗圣少女',
+    nameJp:'怪盗セイント・テール',
+    icon: '🌙',
+    tags: ['少女', '恋爱', '冒险', '魔术', '纯爱'],
+    episodes: '全43话',
+    year: '1995-1996',
+    studio: '东京MOVIE新社',
+    rating: '9.8',
+    bannerGradient: 'linear-gradient(135deg, #0a1a3a 0%, #1a5aaa 40%, #a0c4ff 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/6/46607.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/6/46607.jpg',
+    posterColor: '#1a5aaa',
+    seasons: [
+      { title:'TV版', subtitle:'怪盗圣少女', episodes:'全43话', year:'1995年10月 - 1996年9月', studio:'东京MOVIE新社', link:'https://www.bilibili.com/bangumi/media/md2321', linkLabel:'Bilibili' }
+    ],
+    synopsis: '初中二年级的羽丘芽美是一个活泼开朗的普通女生，但到了夜晚，她就会化身为劫富济贫的怪盗St.Tail（圣少女），受见习修女深森圣良之托，用精妙的魔术手法替求助者夺回失物，伸张正义。而同班同学飞鸟二世是警队探长飞鸟友贵的儿子，立志成为名侦探的他发誓要亲手抓住圣少女。在追捕与反追捕的较量中，飞鸟渐渐发觉圣少女每次行动都是为了帮助别人，同时也隐约觉得圣少女很像自己一直在意的芽美。两人在白天斗嘴嬉闹、夜晚追逐对抗的双重生活中，逐渐萌生了青涩而甜蜜的情感。',
+    characters: [
+      {
+        name:'羽丘芽美', nameJp:'羽丘 芽美', cv:'樱井智', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'152cm', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'怪盗St.Tail（圣少女）', birthday:'9月29日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #ff69b4, #8b5cf6)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/65550.webp',
+        personality:'白天活泼开朗、天真可爱，有些粗心和大大咧咧，数学成绩不佳只考过26分，但体育非常出色。夜晚化身圣少女时则变得冷静沉着、自信优雅。感情丰富，对浪漫充满少女般的憧憬，内心暗恋飞鸟二世却不善表达。',
+        background:'圣波利亚学院初中二年级学生，拥有魔术师父母的血统，继承了高超的魔术技巧。因父亲禁止公开表演魔术，她只能以怪盗圣少女的身份展示才华。在好友圣良的协助下行侠仗义，每次行动前都会发出预告信。在整个系列中始终在"正义的窃贼"身份与"普通少女"日常之间寻找平衡。',
+        abilities:[{name:'魔术技巧',value:98,color:'#ff69b4'},{name:'运动能力',value:90,color:'#ff1493'},{name:'变装能力',value:95,color:'#00d2ff'},{name:'勇气',value:88,color:'#f093fb'},{name:'直觉力',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'请原谅我以这种方式行侠仗义！3、2、1——It\'s show time！', gallery:[]
+      },
+      {
+        name:'飞鸟二世', nameJp:'飛鸟 ジュニア', cv:'冈野浩介', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'初级侦探', birthday:'8月12日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #1a3a6a, #3a7aca)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/15/132521.webp',
+        personality:'聪明机智且有些骄傲，正义感强烈。立志成为名侦探，性格直率但有些莽撞。对圣少女的态度从最初单纯想要抓捕，逐渐转变为想要亲手抓住她却不愿交给任何人。经常和芽美斗嘴，但内心对芽美有着超越同学的特殊情感。',
+        background:'圣波利亚学院初中二年级学生，警队探长飞鸟友贵的儿子。因父亲一直未能将圣少女捉拿归案，立志当名侦探并决心亲手抓住圣少女。在追捕过程中渐渐发现圣少女的行动其实是在帮助他人，同时开始觉得圣少女很像自己同班的芽美。在不断的对抗中，他的目标从单纯的抓捕变成了守护。',
+        abilities:[{name:'推理能力',value:85,color:'#1a5aaa'},{name:'观察力',value:88,color:'#3a7aca'},{name:'行动力',value:82,color:'#00d2ff'},{name:'正义感',value:95,color:'#f093fb'},{name:'毅力',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'我一定会亲手抓住你的，圣少女！', gallery:[]
+      },
+      {
+        name:'深森圣良', nameJp:'深森 聖良', cv:'井上喜久子', role:'protagonist', roleLabel:'核心配角',
+        age:'14岁', height:'152cm', weight:'43.5kg', affiliation:'圣波利亚学院 / 见习修女', status:'芽美的搭档', birthday:'7月3日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #ffffff, #c8e0ff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/86064.webp',
+        personality:'温柔文静、善解人意的见习修女。总是耐心倾听前来祈祷者的烦恼，拥有出色的情报收集和分析能力。对芽美的事极为上心，是芽美最信赖的伙伴，在行动中负责情报支援和策划。性格类似于知世般的完美辅佐者。',
+        background:'圣波利亚学院的见习修女，羽丘芽美的同班同学兼挚友。在教堂倾听求助者的请求后，将信息传达给芽美，协助她变身为怪盗圣少女展开行动。善于改装样貌、打探消息，为芽美提供行动支援。是唯一知道芽美身为圣少女秘密的人。',
+        abilities:[{name:'情报收集',value:95,color:'#ff69b4'},{name:'洞察力',value:90,color:'#8b5cf6'},{name:'策划能力',value:88,color:'#00d2ff'},{name:'温柔',value:98,color:'#f093fb'},{name:'信仰心',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'芽美，今晚也有人需要你的帮助……', gallery:[]
+      },
+      {
+        name:'高宫丽娜', nameJp:'高宮 リナ', cv:'永岛由子', role:'supporting', roleLabel:'重要配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'转学生', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #aa1a1a, #ff6666)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/620182.webp',
+        personality:'性格直率果敢、大胆泼辣的混血少女，体术极为精湛。对飞鸟二世展开热烈追求，拥有敏锐的直觉，曾怀疑芽美就是圣少女。好胜心强，不达目的不罢休。在发现飞鸟与芽美的关系后最终选择退出，展现了大方洒脱的一面。',
+        background:'圣华市市长森中秀雄的侄女，身材高大的混血少女。转学至羽丘芽美班级后主动协助飞鸟二世追捕怪盗圣少女，期间因敏锐直觉怀疑芽美身份，但始终未能证实。对飞鸟二世展开热烈追求，直至其与芽美确立恋爱关系后选择退出。',
+        abilities:[{name:'体术',value:92,color:'#ff6666'},{name:'直觉力',value:88,color:'#aa1a1a'},{name:'行动力',value:90,color:'#ff1493'},{name:'好胜心',value:95,color:'#f093fb'},{name:'洒脱',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'飞鸟二世，我一定会让你注意到我的！', gallery:[]
+      },
+      {
+        name:'飞鸟友贵', nameJp:'飛鳥 友貴', cv:'森川智之', role:'supporting', roleLabel:'配角',
+        age:'约40岁', height:'不详', weight:'不详', affiliation:'圣华市警署', status:'警队探长', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a3a, #4a4a7a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/402529.webp?s=a47496aef5dc55825c82196eba3e6b5b',
+        personality:'正直认真的警队探长，性格沉稳但有些固执。长期负责追捕怪盗圣少女却屡次失败，但始终不放弃。深爱自己的儿子飞鸟二世，对儿子的侦探梦想既支持又担忧。',
+        background:'圣华市警署的探长，飞鸟二世的父亲。一直负责追捕怪盗圣少女的案件，但每次都被圣少女巧妙逃脱。虽然未能完成任务，但他的坚持和正直感染了儿子飞鸟二世，也使父子二人共同参与到追捕圣少女的事业中。',
+        abilities:[{name:'侦查能力',value:75,color:'#4a4a7a'},{name:'正义感',value:88,color:'#1a1a3a'},{name:'毅力',value:85,color:'#00d2ff'},{name:'领导力',value:70,color:'#f093fb'},{name:'格斗',value:65,color:'#ffd93d'}],
+        titanForms:[], quote:'圣少女，我一定会在下次抓住你的！', gallery:[]
+      },
+      {
+        name:'佐渡真人', nameJp:'佐渡 真人', cv:'森川智之', role:'supporting', roleLabel:'配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'飞鸟好友', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a3a2a, #5a8a5a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/15/114322.webp?s=c93d02c685c815a1c6e3171ee0f4793f',
+        personality:'飞鸟二世的好友兼搭档，开朗幽默，常常给飞鸟出主意。虽然看起来吊儿郎当，但关键时刻也能靠得住。是推动飞鸟和芽美关系发展的关键助力。',
+        background:'圣波利亚学院初中二年级学生，飞鸟二世的同班同学兼好友。经常帮助飞鸟分析圣少女的行动模式，也时常在飞鸟和芽美之间穿针引线。性格随和风趣，是剧中的重要绿叶角色。',
+        abilities:[{name:'信息分析',value:70,color:'#5a8a5a'},{name:'幽默',value:88,color:'#2a3a2a'},{name:'友情',value:90,color:'#00d2ff'},{name:'观察能力',value:72,color:'#f093fb'},{name:'行动力',value:68,color:'#ffd93d'}],
+        titanForms:[], quote:'飞鸟，你有没有觉得芽美和圣少女有点像？', gallery:[]
+      },
+      {
+        name:'羽丘源一郎', nameJp:'羽丘 源一郎', cv:'井上和彦', role:'supporting', roleLabel:'配角',
+        age:'约40岁', height:'不详', weight:'不详', affiliation:'羽丘家', status:'魔术师', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3a2a1a, #8a6a4a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/12/351805.webp?s=bc511fa3f5f33cc95f63a29fca6e5041',
+        personality:'曾经是著名的舞台魔术师，技艺超群。性格温和慈爱，深爱家人。因某种原因退出舞台，不再公开展示魔术，但在家中默默支持着芽美。',
+        background:'羽丘芽美的父亲，曾经是活跃在舞台上的天才魔术师。与妻子映美同样出身魔术界，但在映美去世后，为了保护女儿，禁止芽美公开表演魔术。他的魔术技巧被芽美完美继承，成为怪盗圣少女行动中各种精彩手法的基础。',
+        abilities:[{name:'魔术技巧',value:100,color:'#8a6a4a'},{name:'表演力',value:95,color:'#3a2a1a'},{name:'智慧',value:85,color:'#00d2ff'},{name:'父爱',value:98,color:'#f093fb'},{name:'沉稳',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'芽美，魔术是要用来带给人们快乐的。', gallery:[]
+      },
+      {
+        name:'羽丘映美', nameJp:'羽丘 映美', cv:'榎本智惠子', role:'supporting', roleLabel:'配角',
+        age:'已故', height:'不详', weight:'不详', affiliation:'羽丘家', status:'怪盗金星（已故）', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a1a4a, #7a4aaa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/284765.webp?s=e729187d3ab4c43d0aa4dc6381a073e6',
+        personality:'美丽优雅的女性，曾经也是怪盗"金星"。她的过去对芽美有着深远的影响。温柔而坚强，将魔术与正义的信念传递给了女儿。',
+        background:'羽丘芽美的母亲，曾经是活跃于夜间的怪盗"金星"。与源一郎同为魔术师，两人因魔术结缘。映美在芽美年幼时去世，但她作为怪盗的DNA——正义感与魔术天赋——完美地传承给了芽美。芽美之所以成为怪盗圣少女，某种程度上也是母亲遗志的延续。',
+        abilities:[{name:'魔术技巧',value:100,color:'#7a4aaa'},{name:'变装',value:98,color:'#2a1a4a'},{name:'勇气',value:95,color:'#00d2ff'},{name:'优雅',value:98,color:'#f093fb'},{name:'母爱',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'偷走不义之财，还给人间正义。这也是一种爱的方式。', gallery:[]
+      },
+      {
+        name:'露比', nameJp:'ルビィ', cv:'兴梠里美', role:'supporting', roleLabel:'宠物',
+        age:'不详', height:'0.15m', weight:'0.3kg', affiliation:'羽丘家', status:'芽美的宠物刺猬', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3a2a3a, #9a6aaa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/12/557704.webp?s=85bf28d3ee6ae2418b184fde8067f9ce',
+        personality:'活泼可爱的小刺猬，是芽美最忠实的伙伴。能够理解人类的语言，在芽美变身为怪盗圣少女时常常提供帮助。虽然体型小巧，但勇气可嘉，陪伴芽美度过了许多危难时刻。',
+        background:'羽丘芽美饲养的宠物刺猬，从第3集开始登场。露比拥有不可思议的灵性，能够理解人类的对话，并在芽美执行怪盗任务时多次协助收集情报。作为芽美的精神支柱，露比的存在让芽美在孤独时不再孤单。',
+        abilities:[{name:'灵性',value:88,color:'#9a6aaa'},{name:'协助能力',value:75,color:'#3a2a3a'},{name:'勇气',value:82,color:'#ff6666'},{name:'忠诚',value:100,color:'#ffd93d'},{name:'可爱',value:98,color:'#f093fb'}],
+        titanForms:[], quote:'（吱吱叫着，似乎在为芽美加油）', gallery:[]
+      },
+      {
+        name:'仙道真珠', nameJp:'仙道 真珠', cv:'金井美香', role:'supporting', roleLabel:'反派',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'仙道家', status:'仙道椛子的养女', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #4a1a2a, #aa3a5a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/7/569399.webp?s=df4feb65476c1ee6b0cec6bffe636cd0',
+        personality:'表面天真可爱，实则心机深沉。受养母仙道椛子的影响，对羽丘映美（怪盗金星）怀有强烈的复仇心理。擅长利用催眠术欺骗他人，为达目的不择手段。在第40-43集中作为主要反派登场，给芽美带来了巨大的危机。',
+        background:'仙道椛子的养女，在第40-43集中登场。椛子曾是映美的竞争对手，因嫉妒映美的魔术才华而心生怨恨。真珠继承了养母的执念，利用催眠术设局陷害芽美，试图揭穿圣少女的真实身份。最终在芽美的真诚感化下，对仇恨的执念产生了动摇。',
+        abilities:[{name:'催眠术',value:92,color:'#aa3a5a'},{name:'心机',value:88,color:'#4a1a2a'},{name:'演技',value:85,color:'#ff6666'},{name:'复仇心',value:95,color:'#1a1a3a'},{name:'观察力',value:78,color:'#ffd93d'}],
+        titanForms:[], quote:'我一定要让怪盗金星的后代付出代价！', gallery:[]
+      },
+      {
+        name:'恭子', nameJp:'恭子', cv:'岩男润子', role:'supporting', roleLabel:'配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'芽美同班同学', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a3a4a, #6a8aaa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/416493.webp?s=da380d2c16172ab7aacfb1bda388adf4',
+        personality:'性格温和友善的少女，是芽美在校的好友之一。经常与芽美及其他同学一起活动，虽然对芽美的怪盗身份一无所知，但总能在日常生活中给予芽美温暖与支持。',
+        background:'圣波利亚学院初中二年级学生，羽丘芽美的同班同学和好友。在剧中常以群像形式出现，参与班级活动和朋友聚会，是芽美日常生活中不可或缺的伙伴之一。',
+        abilities:[{name:'友情',value:82,color:'#6a8aaa'},{name:'温柔',value:85,color:'#2a3a4a'},{name:'社交',value:78,color:'#00d2ff'},{name:'体贴',value:80,color:'#f093fb'},{name:'乐观',value:75,color:'#ffd93d'}],
+        titanForms:[], quote:'芽美，今天放学后一起去吃甜点吧！', gallery:[]
+      },
+      {
+        name:'凉子', nameJp:'森下 みゆき', cv:'不详', role:'supporting', roleLabel:'配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院初中二年级', status:'芽美同班同学', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a3a2a, #5aaa7a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/11/141599.webp?s=8d896c0f55b0b565d58985572b941dbf',
+        personality:'性格文静温柔的女孩，与芽美和恭子关系密切。在班级中属于安静的类型，常常在一旁默默观察，但关键时刻会给予朋友真诚的建议和帮助。',
+        background:'圣波利亚学院初中二年级学生，羽丘芽美的同班同学。与恭子一样是芽美身边的朋友，在剧中的日常校园场景中频繁出现，点缀着芽美的青春生活。',
+        abilities:[{name:'观察力',value:80,color:'#5aaa7a'},{name:'温柔',value:88,color:'#1a3a2a'},{name:'友情',value:85,color:'#00d2ff'},{name:'耐心',value:82,color:'#f093fb'},{name:'体贴',value:78,color:'#ffd93d'}],
+        titanForms:[], quote:'芽美，你最近看起来好像有心事呢。', gallery:[]
+      }
+    ]
+  },
+  {
+    id: 'mermaid',
+    name: '人鱼的旋律',
+    nameJp:'マーメイドメロディーぴちぴちピッチ',
+    icon: '🐚',
+    tags: ['少女', '恋爱', '魔法', '音乐', '奇幻'],
+    episodes: '全91话',
+    year: '2003-2004',
+    studio: 'Actas、Synergy Japan',
+    rating: '9.7',
+    bannerGradient: 'linear-gradient(135deg, #0a0a4a 0%, #1a7aaa 40%, #a0e4ff 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/3/9640.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/3/9640.jpg',
+    posterColor: '#1a7aaa',
+    seasons: [
+      { title:'第一季', subtitle:'人鱼的旋律', episodes:'全52话', year:'2003年4月 - 2004年3月', studio:'Actas、Synergy Japan', link:'https://www.bilibili.com/bangumi/media/md1875', linkLabel:'Bilibili' },
+      { title:'第二季', subtitle:'人鱼的旋律Pure', episodes:'全39话', year:'2004年4月 - 2004年12月', studio:'Actas、Synergy Japan', link:'https://www.bilibili.com/bangumi/media/md1876', linkLabel:'Bilibili' }
+    ],
+    synopsis: '来自北太平洋的美人鱼公主露西亚，七年前救了一名溺水的男孩，并将最珍贵的粉红色真珠交给了他。七年后，为了继承一事来到人类世界寻找那个男孩要回真珠，最终找到了名叫堂本海斗的冲浪少年。然而化身人类形态的露西亚与人鱼形态截然不同，且不能告诉海斗自己的真实身份，否则将化为泡沫。与此同时，一群水妖已经入侵海上世界，露西亚必须聚集七大洋的七位美人鱼公主——波音、莉娜、卡莲、诺威尔、可可、沙罗和星罗——用歌声作为武器对抗水妖，使传说中的海洋女神阿克安·雷芝娜复活，守护七大洋的和平。在这场冒险中，露西亚与海斗之间青涩而坚定的爱情也成为最温暖的力量。',
+    characters: [
+      {
+        name:'七海露西亚', nameJp:'七海 るちあ', cv:'中田明日見', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'156cm', weight:'不详', affiliation:'北太平洋人鱼王国', status:'北太平洋粉色真珠美人鱼公主', birthday:'7月3日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #ff69b4, #ff1493)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/39609.webp',
+        personality:'天真浪漫又有点冒冒失失的少女，内心却藏着深厚的美人鱼公主自觉性。个性鲁莽但善良纯真，对爱情充满少女般的憧憬。没有真珠时唱歌五音不全，但获得真珠后的歌声拥有强大的力量。在感情中直率勇敢，愿意为所爱之人付出一切。',
+        background:'北太平洋国的美人鱼公主，代表色为粉色。七岁时救了落水的海斗并将真珠交给他，七年后为继承仪式来到人类世界寻找海斗要回真珠。与同样来到陆地的波音、莉娜一起居住，在珍珠水疗馆工作。在与水妖的战斗中逐渐成长为真正的美人鱼公主领袖，最终与海斗确认了彼此的心意。',
+        abilities:[{name:'歌声力量',value:95,color:'#ff69b4'},{name:'变身能力',value:92,color:'#ff1493'},{name:'勇气',value:88,color:'#00d2ff'},{name:'爱的力量',value:98,color:'#f093fb'},{name:'冲劲',value:85,color:'#ffd93d'}],
+        titanForms:[], quote:'爱的坚持加上信念，生命从此会不断地蔓延！', gallery:[]
+      },
+      {
+        name:'宝生波音', nameJp:'宝生 はのん', cv:'寺門仁美', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'152cm', weight:'不详', affiliation:'南大西洋人鱼王国', status:'南大西洋蓝色真珠美人鱼公主', birthday:'5月24日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #4488ff, #00aaff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/39610.webp',
+        personality:'活力四射又温柔体贴的少女，被称为"爱情失控列车"和恋爱专家。热爱购物和化妆，对时尚有着敏锐的直觉。虽然原本不太赞成人鱼和人类恋爱，但自己却先后爱上了海月老师和白井渚。感情丰富且坦诚，失恋后会大哭一场然后重新出发。',
+        background:'南大西洋国的美人鱼公主，代表色为水蓝色。国家被水妖侵占后逃到人类世界，是最早与露西亚汇合的公主之一。一开始见到露西亚的项链就认出她是人鱼，于是跟随她到陆地生活。第一部中暗恋海月太郎老师，失恋后第二部中与白井渚相恋，展现了从暗恋到真爱的成长。',
+        abilities:[{name:'歌声力量',value:90,color:'#4488ff'},{name:'变装化妆',value:88,color:'#00aaff'},{name:'恋爱直觉',value:95,color:'#f093fb'},{name:'社交力',value:85,color:'#ffd93d'},{name:'时尚感',value:92,color:'#ff69b4'}],
+        titanForms:[], quote:'Ever Blue！我的爱将化作永恒的蓝色旋律！', gallery:[]
+      },
+      {
+        name:'洞院莉娜', nameJp:'洞院 リナ', cv:'浅野麻由美', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'163cm', weight:'不详', affiliation:'北大西洋人鱼王国', status:'北大西洋绿色真珠美人鱼公主', birthday:'9月2日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #22cc66, #008844)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/39564.webp',
+        personality:'成熟冷静、沉默寡言的美人鱼公主，在学校中受众多男女追捧却始终独来独往。外表冷淡内心温柔，对诺威尔被捉走一事极度自责。喜欢穿男生校服，具有帅气的中性魅力。擅长家务和讲笑话，喜爱的科目是数学。对滨崎雅宏有好感但总是不善于表达。',
+        background:'北大西洋国的美人鱼公主，代表色为绿色。国家被侵占后到人类世界躲避，是露西亚第二个找到的公主。曾因无法救出诺威尔而深深自责，也因此被卡莲误会。后来与卡莲化解误会成为好友。第二部中逐渐打开心扉，与滨崎雅宏发展出青涩的恋情。',
+        abilities:[{name:'歌声力量',value:92,color:'#22cc66'},{name:'冷静度',value:95,color:'#008844'},{name:'家务技能',value:88,color:'#00d2ff'},{name:'洞察力',value:90,color:'#f093fb'},{name:'帅气值',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'Star Jewel，守护星之宝石的绿色光芒！', gallery:[]
+      },
+      {
+        name:'堂本海斗', nameJp:'堂本 海斗', cv:'岸尾大輔', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'172cm', weight:'不详', affiliation:'冲浪部', status:'帕达拉萨族后裔', birthday:'11月21日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #1a1a4a, #3366aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/39563.webp',
+        personality:'外表帅气阳光、热爱冲浪的少年，在学校很受女生欢迎。性格率真单纯，对露西亚有说不出的特殊感情。其实是帕达拉萨族的后裔，代表光明的一面，与凯特是兄弟。在第二部中为了保护露西亚等人，主动封印关于美人鱼公主的记忆，醒来后失去了与露西亚相关的一切回忆。',
+        background:'七岁时被露西亚所救，一直寻找当年救他的人鱼公主。与露西亚同班后逐渐产生感情，但直觉觉得露西亚与美人鱼公主有某种联系。在最终决战中得知自己是帕达萨拉族后裔、凯特的弟弟。第二部去夏威夷训练冲浪时被米凯尔袭击，为保护露西亚的记忆而自我封印。后帕达拉萨族力量觉醒，解封了所有记忆。',
+        abilities:[{name:'冲浪',value:98,color:'#3366aa'},{name:'帕达拉萨之力',value:88,color:'#1a1a4a'},{name:'勇气',value:90,color:'#00d2ff'},{name:'直觉',value:85,color:'#f093fb'},{name:'守护力',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'露西亚，不管发生什么，我都会保护你！', gallery:[]
+      },
+      {
+        name:'珈琳卡莲', nameJp:'かれん', cv:'小暮英麻', role:'supporting', roleLabel:'核心配角',
+        age:'17岁', height:'169cm', weight:'不详', affiliation:'南冰洋人鱼王国', status:'南冰洋紫色真珠美人鱼公主', birthday:'2月14日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #9933cc, #6600aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/66065.webp',
+        personality:'一开始性格冷淡孤傲，因误会莉娜丢下诺威尔而对其心存芥蒂。得知真相后冰释前嫌，恢复活泼开朗的本性。独立好强，不愿轻易依赖他人，但关键时刻总是冲在最前面拯救同伴。第二部中喜欢上了英国调查团的司柏鲁。',
+        background:'南冰洋的美人鱼公主，代表色为紫色，是诺威尔的双胞胎妹妹。一开始因误会莉娜导致诺威尔被捉而非常厌恶露西亚等人，但经常暗中出手相救。得知真相后加入团队，成为可靠的战友。第二部中性格更加开朗，在各国旅行中邂逅了司柏鲁。',
+        abilities:[{name:'歌声力量',value:90,color:'#9933cc'},{name:'独立性',value:95,color:'#6600aa'},{name:'战斗力',value:85,color:'#ff69b4'},{name:'冰之力量',value:82,color:'#00d2ff'},{name:'姐妹情深',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'乘着极光的风，我一定会救出诺威尔！', gallery:[]
+      },
+      {
+        name:'加琳诺威尔', nameJp:'ノエル', cv:'永田亮子', role:'supporting', roleLabel:'核心配角',
+        age:'17岁', height:'169cm', weight:'不详', affiliation:'北冰洋人鱼王国', status:'北冰洋靛蓝真珠美人鱼公主', birthday:'2月13日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #2244aa, #1133cc)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/103925.webp',
+        personality:'性格温柔恬静、知书达理的美人鱼公主，非常喜欢看书。与莉娜是挚友，被捉走时主动要求莉娜先逃跑，深明大义。虽然是卡莲的姐姐（大一天），但比卡莲更加沉稳内敛。',
+        background:'北冰洋的美人鱼公主，代表色为靛蓝色，是卡莲隔着国际换日线出生的双胞胎姐姐。与莉娜是至交好友，被凯特抓走时坚持让莉娜先行逃脱。后被露西亚等人成功救出，重新与妹妹卡莲和好友莉娜团聚。',
+        abilities:[{name:'歌声力量',value:88,color:'#2244aa'},{name:'温柔',value:95,color:'#1133cc'},{name:'知识',value:90,color:'#00d2ff'},{name:'牺牲精神',value:92,color:'#f093fb'},{name:'姐妹情深',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'莉娜，快走！不要管我，一定要逃出去！', gallery:[]
+      },
+      {
+        name:'可可', nameJp:'ココ', cv:'新井里美', role:'supporting', roleLabel:'核心配角',
+        age:'19岁', height:'161cm', weight:'不详', affiliation:'南太平洋人鱼王国', status:'南太平洋黄色真珠美人鱼公主', birthday:'8月7日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #ffcc00, #ff9900)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/60840.webp',
+        personality:'热血豪爽、爱冒险的活力少女。与沙罗是至交好友，一心想拯救堕入黑暗的沙罗。曾被凯特绑架但从未放弃希望。性格开朗乐观，擅长与异性交际，非常喜欢看帅气的男生。',
+        background:'南太平洋国的美人鱼公主，代表色为黄色。与沙罗是好友，沙罗因悲伤变为黑色人鱼时，可可的宫殿也一同被毁。可可始终不放弃拯救沙罗的信念，即使被凯特抓住也坚持到被救出。最终见证了沙罗回归善良、与凯特一同沉入大海的悲壮结局。',
+        abilities:[{name:'歌声力量',value:85,color:'#ffcc00'},{name:'乐观',value:95,color:'#ff9900'},{name:'社交力',value:88,color:'#ff69b4'},{name:'冒险心',value:92,color:'#00d2ff'},{name:'友情',value:98,color:'#f093fb'}],
+        titanForms:[], quote:'沙罗，我一定会把你带回来的！', gallery:[]
+      },
+      {
+        name:'织本沙罗', nameJp:'さら', cv:'植田佳奈', role:'supporting', roleLabel:'核心配角',
+        age:'22岁', height:'172cm', weight:'不详', affiliation:'印度洋人鱼王国', status:'印度洋橙色真珠美人鱼公主', birthday:'11月22日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #ff8800, #cc4400)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/60841.webp',
+        personality:'众美人鱼公主中年纪最大的一位，曾经温柔善良，因与海月太郎的恋情失败而陷入深深的悲伤与怨恨。怨恨之力将她变成了黑色人鱼，那股黑暗力量甚至破坏了自己与可可的宫殿。内心深处仍然渴望被理解和陪伴，是全剧最悲剧性的人物。',
+        background:'印度洋的美人鱼公主，代表色为橙色。曾与海月太郎相恋，失恋后因悲伤和怨恨的负面力量变为黑色人鱼，并加入了凯特的阵营。后来被波音和露西亚的开解感动，重新变为橙色人鱼。最终因为理解了凯特内心的孤独，选择陪他一起沉入大海。她的珍珠后来交由露西亚托管，灵魂则不时在露西亚梦中出现。',
+        abilities:[{name:'歌声力量',value:95,color:'#ff8800'},{name:'黑暗之力',value:92,color:'#cc4400'},{name:'悲伤共鸣',value:98,color:'#1a1a3a'},{name:'自我牺牲',value:100,color:'#f093fb'},{name:'温柔',value:88,color:'#ffd93d'}],
+        titanForms:[], quote:'Return to the sea……回大海去吧，这是我唯一能做的。', gallery:[]
+      },
+      {
+        name:'织本星罗', nameJp:'星羅', cv:'喜多村英梨', role:'supporting', roleLabel:'重要配角',
+        age:'7岁', height:'131cm', weight:'不详', affiliation:'印度洋人鱼王国', status:'印度洋新任橙色真珠美人鱼公主', birthday:'12月19日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #ffaa66, #ff7744)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/121055.webp',
+        personality:'天真可爱的小美人鱼公主，是沙罗消失时诞生的新任印度洋公主。性格活泼开朗，常在露西亚的梦中出现给予指引。从年龄上看似沙罗的女儿，但也被认为是沙罗的妹妹。拥有纯真温暖的心灵力量。',
+        background:'沙罗消失时诞生的新美人鱼公主，继承了沙罗的橙色珍珠。诞生之际被米凯尔吸收，只剩下珍珠本身。她的内心分别分布在米凯尔的羽毛上，称为"心之碎片"。露西亚需要用珍珠盒收集带有心之碎片的羽毛。在第二季倒数第二集中，米凯尔放下了所有心之碎片，星罗才完全诞生。',
+        abilities:[{name:'歌声力量',value:80,color:'#ffaa66'},{name:'心灵之力',value:90,color:'#ff7744'},{name:'纯真',value:98,color:'#ff69b4'},{name:'成长力',value:95,color:'#00d2ff'},{name:'希望',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'Beautiful Wish……总有一天，我一定会真正诞生的！', gallery:[]
+      },
+      {
+        name:'小波', nameJp:'ヒッポ', cv:'伊東都', role:'supporting', roleLabel:'配角',
+        age:'不详', height:'0.3m（企鹅形态）', weight:'不详', affiliation:'海洋女神侍从', status:'守护封印钥匙的海之神兽', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #22aaaa, #006666)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/11/60838.webp',
+        personality:'原本是负责守护封印钥匙的海之神兽（海马/龙马），因偷懒而让沙罗有机可乘偷走了封印钥匙，被惩罚变为企鹅形态来辅助露西亚。虽然嘴上不饶人，但实际上对露西亚等人忠心耿耿。可以变身成美少年形态。与水妖悠莉相恋。',
+        background:'席伯卡波斯族的海之神兽，负责守护封印水妖的关键钥匙。但因偷懒失职导致沙罗偷走了钥匙，受到惩罚变为企鹅形态。长期留在人间后有时魔法会失效变为美少年。在与水妖的交战中逐渐爱上了悠莉，两人的跨物种之恋是剧中感人的一条支线。',
+        abilities:[{name:'魔法',value:78,color:'#22aaaa'},{name:'忠诚',value:90,color:'#006666'},{name:'变身',value:72,color:'#00d2ff'},{name:'情报分析',value:80,color:'#f093fb'},{name:'勇气',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'我是海之神兽，才不是普通的企鹅！', gallery:[]
+      },
+      {
+        name:'海月太郎', nameJp:'海月 太郎', cv:'小野坂昌也', role:'supporting', roleLabel:'配角',
+        age:'约25岁', height:'不详', weight:'不详', affiliation:'珍珠水疗馆', status:'钢琴家/教师', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #4466aa, #223366)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/13/98779.webp',
+        personality:'温文尔雅的音乐家，擅长弹钢琴。是波音在学校暗恋的对象，也是沙罗曾经的恋人。性格温和内敛，对音乐有着深沉的热爱。虽然知道波音的心意，却因往事而刻意保持距离。',
+        background:'曾在印度洋旅行时与沙罗相恋，后因沙罗变为黑色人鱼而痛苦分手。隐姓埋名来到露西亚所在的海边小镇，在海边的水疗馆兼职弹钢琴。波音对他一见钟情，但海月太郎始终无法忘记沙罗。最终在沙罗与凯特一同沉入大海后，他选择了释然和放手。',
+        abilities:[{name:'钢琴',value:95,color:'#4466aa'},{name:'温柔',value:90,color:'#223366'},{name:'音乐创作',value:88,color:'#00d2ff'},{name:'深情',value:92,color:'#f093fb'},{name:'释然',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'这首水色的旋律，是我为那个人而作的。', gallery:[]
+      },
+      {
+        name:'白井渚', nameJp:'白井 渚', cv:'大谷美絵', role:'supporting', roleLabel:'配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'圣波利亚学院', status:'波音的恋人', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #4488cc, #2266aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/81623.webp',
+        personality:'活泼开朗的阳光少年，对波音一见倾心后展开了热烈直白的追求。虽然比波音小几岁，但真诚和热情打动了失恋中的波音。性格坦率大方，是波音从悲伤中走出来的重要力量。',
+        background:'圣波利亚学院的学生，在波音因失恋而伤心时出现在她身边。以真诚热烈的态度追求波音，最终赢得了她的心。第二部中两人成为恋人，是剧中甜蜜温暖的一对。',
+        abilities:[{name:'热情',value:95,color:'#4488cc'},{name:'勇气',value:88,color:'#2266aa'},{name:'直率',value:92,color:'#00d2ff'},{name:'浪漫',value:85,color:'#f093fb'},{name:'真诚',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'波音前辈，请让我守护你的笑容！', gallery:[]
+      },
+      {
+        name:'滨崎雅宏', nameJp:'浜崎 雅宏', cv:'古島清孝', role:'supporting', roleLabel:'配角',
+        age:'15岁', height:'不详', weight:'不详', affiliation:'露西亚同校', status:'莉娜的恋人', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a6a3a, #1a4a2a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/68697.webp',
+        personality:'温和稳重的少年，是少数能打动莉娜心扉的人。虽然莉娜总是表面冷淡，但雅宏的耐心和温柔逐渐融化了她的防线。喜欢蔬菜料理，性格成熟可靠。',
+        background:'露西亚学校的学长，对莉娜一见倾心后默默守护。面对莉娜的冷淡外表从不放弃，最终走进了她的内心。第二部中两人关系逐步发展，成为全剧最稳健的一对恋人。',
+        abilities:[{name:'耐心',value:95,color:'#2a6a3a'},{name:'料理',value:82,color:'#1a4a2a'},{name:'温柔',value:90,color:'#00d2ff'},{name:'坚持',value:88,color:'#f093fb'},{name:'包容',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'莉娜，不管你什么时候回头，我都在这里。', gallery:[]
+      },
+      {
+        name:'凯特', nameJp:'ガイト', cv:'岸尾大輔', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'水妖帝国', status:'帕达拉萨族·暗之支配者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a0a2a, #4a1a6a)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/68999.webp',
+        personality:'冷酷霸道的暗之帝王，统御水妖帝国的帕达拉萨族之王。实际上是海斗的兄长，代表黑暗。内心深处极度孤独，渴望与人相互理解。这种孤独与沙罗的悲伤彼此共鸣，是全剧最引人同情的一对。',
+        background:'帕达拉萨族的王，与海斗是亲兄弟，代表黑暗面。统率水妖军团入侵七大洋，试图用黑暗力量征服海洋世界。在与露西亚等人的最终决战中被击败，沙罗因理解了他的孤独而选择陪伴他沉入大海。两人一同消失在海底的结局是全剧最悲壮的一幕。',
+        abilities:[{name:'黑暗力量',value:95,color:'#4a1a6a'},{name:'统帅力',value:90,color:'#1a0a2a'},{name:'水妖操控',value:92,color:'#00d2ff'},{name:'孤独',value:98,color:'#1a1a3a'},{name:'执念',value:88,color:'#ffd93d'}],
+        titanForms:[], quote:'我只需要……理解孤独的人陪伴在身边。', gallery:[]
+      },
+      {
+        name:'米凯尔', nameJp:'ミケル', cv:'石田彰', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'古代神灵', status:'第二部最终反派', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3a3a6a, #6a6aaa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/121057.webp',
+        personality:'拥有天使般美艳外表的古代神灵，是第二部的主要反派。性格冷酷理性，以"净化"之名行毁灭之实。吸收了星罗的心之碎片，企图消灭人类文明。外表平静淡漠，但内心深处也存在着矛盾与挣扎。',
+        background:'远古时代被封印的强大存在，第二部中苏醒后成为美人鱼公主们的最大威胁。他吸收了星罗诞生时的灵魂，将其心之碎片散布在自己的羽毛中。企图用"净化"之名毁灭人类对海洋的破坏行为。最终在露西亚等人的歌声感化和星罗心之碎片的回归下，放下了执念消散于天地。',
+        abilities:[{name:'神灵之力',value:98,color:'#6a6aaa'},{name:'吸收能力',value:95,color:'#3a3a6a'},{name:'净化之力',value:90,color:'#00d2ff'},{name:'冷酷',value:88,color:'#1a1a3a'},{name:'矛盾心',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'人类的欲望，必须被净化。', gallery:[]
+      },
+      {
+        name:'天城米卡露', nameJp:'天城 みかる', cv:'津田美波', role:'supporting', roleLabel:'重要配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'天城家', status:'天城理人道的妹妹', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #aa3366, #662244)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/101354.webp',
+        personality:'天真无邪的少女，是米凯尔寄生的人类宿主。性格温柔脆弱，对哥哥理人道有着深深的依赖。体内寄宿着米凯尔时经常失去意识，是第二部中令人心疼的角色。',
+        background:'天城理人道的妹妹，米凯尔以她为媒介在人类世界活动。由于米凯尔的存在，米卡露经常陷入昏迷和精神不稳定的状态。理人道为了保护妹妹不惜一切代价。最终米凯尔离开后，米卡露恢复了正常生活。',
+        abilities:[{name:'共鸣力',value:80,color:'#aa3366'},{name:'脆弱',value:90,color:'#662244'},{name:'善良',value:88,color:'#00d2ff'},{name:'依附心',value:85,color:'#f093fb'},{name:'纯真',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'哥哥……我好害怕，身体里好像有什么东西……', gallery:[]
+      }
+    ]
+  },
+  {
+    id: 'nozakikun',
+    name: '月刊少女野崎君',
+    nameJp:'月刊少女野崎くん',
+    icon: '✏️',
+    tags: ['搞笑', '校园', '恋爱', '漫画'],
+    episodes: '全12话',
+    year: '2014',
+    studio: 'Doga Kobo',
+    rating: '9.8',
+    bannerGradient: 'linear-gradient(135deg, #2a1a4a 0%, #ff69b4 50%, #ffd93d 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/5/66083.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/5/66083.jpg',
+    posterColor: '#ff69b4',
+    seasons: [
+      { title:'TV版', subtitle:'月刊少女野崎君', episodes:'全12话', year:'2014年7月 - 2014年9月', studio:'Doga Kobo', link:'https://www.bilibili.com/bangumi/media/md53/', linkLabel:'Bilibili' }
+    ],
+    synopsis: '高中女生佐仓千代好不容易鼓起勇气向同年级的野崎梅太郎告白，结果得到的却是一张亲笔签名和"要不要来我家？"的邀请。满心期待的千代来到野崎家，发现等待她的不是浪漫告白，而是堆积如山的漫画原稿——原来这个身材高大、表情严肃的同班同学，竟然就是大名鼎鼎的少女漫画家"梦野咲子"。从此千代稀里糊涂地成了野崎的漫画助手，与围绕在野崎身边的一群性格鲜明的同学一起，展开了一段又一段爆笑又温馨的校园日常。表面上是一部少女漫，实则是全员反差萌的搞笑名作。',
+    characters: [
+      {
+        name:'野崎梅太郎', nameJp:'野崎 梅太郎', cv:'中村悠一', role:'protagonist', roleLabel:'主角',
+        age:'17岁', height:'190cm以上', weight:'不详', affiliation:'校园漫画部（独角戏）', status:'人气少女漫画家"梦野咲子"', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #333366, #6666cc)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/307565.webp',
+        personality:'外表冷酷严肃、身材高大的男子高中生，实际上是不折不扣的少女漫画家。性格认真一根筋，画少女漫画时心细如尘，对恋爱情感描写得细腻入微，但本人却是完全没有恋爱经验的母胎单身。日常生活中笨拙直率，经常做出让人哭笑不得的举动。擅长画画和体育，尤其擅长画可爱的小动物。',
+        background:'笔名"梦野咲子"的人气少女漫画家，连载作品《恋爱吧！》深受读者喜爱。将身边朋友作为角色原型融入漫画中，但因为完全不理解恋爱而闹出各种笑话。拥有惊人的绘画速度和画力，但性格上有着与外表不符的呆萌和天然。对千代抱有好感但自己完全不自知。',
+        abilities:[{name:'画力',value:98,color:'#6666cc'},{name:'少女心',value:95,color:'#ff69b4'},{name:'运动神经',value:85,color:'#00d2ff'},{name:'钝感力',value:100,color:'#ffd93d'},{name:'工作速度',value:92,color:'#f093fb'}],
+        titanForms:[], quote:'……你要来我家吗？（递出亲笔签名）', gallery:[]
+      },
+      {
+        name:'佐仓千代', nameJp:'佐倉 千代', cv:'小澤亜李', role:'protagonist', roleLabel:'主角',
+        age:'16岁', height:'不详', weight:'不详', affiliation:'校园漫画部（伪）', status:'野崎的漫画助手', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ff69b4, #ff99cc)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/307375.webp',
+        personality:'开朗可爱、元气满满的小个子少女，暗恋野崎梅太郎。虽然告白被误解为索要签名，但并没有放弃，反而成了野崎的专属助手。性格认真负责，擅长涂黑、贴网点等杂活。偶尔会因为野崎的天然而感到沮丧，但很快就能振作起来。擅长料理和小手工艺，画技糟糕。',
+        background:'暗恋野崎梅太郎的同班女生，告白时阴差阳错地成了他的漫画助手。虽然一直想要传达心意，但每次都被野崎的迟钝化解。作为漫画助手主要负责涂黑工作，后来也逐渐参与到分镜和构思中。是连接所有角色关系的核心人物，虽然是吐槽担当但从不恶意。',
+        abilities:[{name:'涂黑技术',value:95,color:'#ff69b4'},{name:'元气',value:90,color:'#ff99cc'},{name:'料理',value:88,color:'#00d2ff'},{name:'忍耐力',value:85,color:'#f093fb'},{name:'画技',value:15,color:'#ffd93d'}],
+        titanForms:[], quote:'我喜欢你！……啊不是，我是说来你家帮忙涂黑！', gallery:[]
+      },
+      {
+        name:'御子柴実琴', nameJp:'御子柴 実琴', cv:'岡本信彦', role:'protagonist', roleLabel:'主角',
+        age:'17岁', height:'178cm', weight:'不详', affiliation:'校园漫画部（伪）', status:'野崎的漫画助手/学校"王子殿下"', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ff6666, #ff3333)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/307566.webp',
+        personality:'学校公认的"王子殿下"，长相帅气、女生缘极好。但实际性格是典型的傲娇——在社交游戏里练到满级，现实中面对女生却说不出话。一个人在家时会疯狂玩乙女游戏，对自己的游戏角色投入真情实感。被野崎用作漫画中女主角铃木三郎的原型。极度在意自己的形象。',
+        background:'野崎的同班同学，表面上是完美王子，私底下是游戏宅。在乙女游戏中追求所有角色CG，但现实生活中一和女生对视就紧张得满脸通红。作为漫画助手负责背景绘制。被野崎毫不留情地暴露了傲娇本性后，一度极度崩溃。名字"実琴"被野崎作为女主角"铃木"的名字灵感来源。',
+        abilities:[{name:'王子光环',value:95,color:'#ff6666'},{name:'乙女游戏',value:100,color:'#ff3333'},{name:'傲娇度',value:98,color:'#f093fb'},{name:'背景绘制',value:80,color:'#00d2ff'},{name:'社交恐惧',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'我才、才没有在玩那种游戏呢！……这个CG是我努力打出来的！', gallery:[]
+      },
+      {
+        name:'槇岛悠', nameJp:'槇島 悠', cv:'中原麻衣', role:'protagonist', roleLabel:'主角',
+        age:'16岁', height:'170cm', weight:'不详', affiliation:'演剧部', status:'校园"王子殿下"（女生限定）', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #aaccff, #6699ff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/13/307069.webp',
+        personality:'长相俊美、气质如王子般的女生，在女生中人气爆棚。性格开朗自信，喜欢调戏堀政行，经常戏弄他。拥有天生丽质和表演天赋，但因为参加演剧部排练而频频翘漫画部的活。对堀政行有着说不清道不明的好感，两人之间的互动是全剧最甜蜜的副线。',
+        background:'演剧部的当红明星，因为长相帅气被女生们奉为"王子殿下"。堀政行是她的忠实搬运工兼好友，经常帮她搬道具和整理东西。虽然和堀的关系表面上只是学姐学弟，但两人之间有着深厚的默契和微妙的情感。被野崎用作漫画中男配角的原型之一。',
+        abilities:[{name:'演技',value:95,color:'#aaccff'},{name:'王子魅力',value:100,color:'#6699ff'},{name:'调戏堀学长',value:98,color:'#ff69b4'},{name:'人气',value:95,color:'#00d2ff'},{name:'翘班技术',value:88,color:'#ffd93d'}],
+        titanForms:[], quote:'堀学长～今天也要帮我搬道具哦！', gallery:[]
+      },
+      {
+        name:'堀政行', nameJp:'堀 政行', cv:'小野友樹', role:'protagonist', roleLabel:'主角',
+        age:'17岁', height:'不详', weight:'不详', affiliation:'演剧部/漫画部', status:'演剧部幕后/野崎的漫画助手', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #669933, #447722)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/11/271405.webp',
+        personality:'外表普通但内心热血的男生，在学校里并不起眼。但一旦被摘掉眼镜就会变得极度暴走（实际上是认真模式下会变成大力士）。作为演剧部的幕后工作人员尽职尽责，同时也是野崎的漫画助手。暗恋槇岛悠，但因为太习惯她的存在而不自知。讨厌别人模仿他的暴走模式。',
+        background:'野崎的同班同学兼漫画助手，负责特效和作画辅助。同时是演剧部的幕后核心成员，专门负责物理搬运和舞台道具。虽然暗恋鹿岛悠，但因为两人关系太亲近而一直没有进展。摘下眼镜后会变成战斗力爆表的"认真模式"，后来这个设定被野崎用在了漫画中。与鹿岛的关系是全剧最甜的副线CP。',
+        abilities:[{name:'特效作画',value:85,color:'#669933'},{name:'认真模式',value:100,color:'#447722'},{name:'搬运力',value:98,color:'#ff6666'},{name:'演技指导',value:82,color:'#00d2ff'},{name:'对鹿岛的忍耐',value:90,color:'#f093fb'}],
+        titanForms:[], quote:'鹿岛！不要翘排练了！……先把道具搬完再说！', gallery:[]
+      },
+      {
+        name:'若松博隆', nameJp:'若松 博隆', cv:'木村良平', role:'protagonist', roleLabel:'主角',
+        age:'16岁', height:'不详', weight:'不详', affiliation:'篮球部/漫画部（伪）', status:'野崎的后辈/濑名的粉丝', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #3399cc, #1177aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/257293.webp',
+        personality:'篮球部的新人，性格认真单纯。因为濑名祐希的歌声而单方面暗恋她（以为她是天使）。完全不知道濑名的真实性格，把她当成纯洁天使来崇拜。是全剧最单纯也最可怜的角色，经常被濑名各种折磨。也作为野崎的漫画助手参与一些杂活。',
+        background:'篮球部一年级学生，偶然在广播室听到濑名祐希演唱的《樱之诗》，被天籁般的歌声打动而爱上了她。完全不知道"洛丽·樱"就是那个粗鲁的濑名，对她充满美好幻想。但每次表白都会因为各种原因被濑名"无意中"破坏。与濑名之间的关系是全剧最虐心的副线。',
+        abilities:[{name:'篮球',value:90,color:'#3399cc'},{name:'单相思',value:100,color:'#1177aa'},{name:'纯真',value:95,color:'#ff69b4'},{name:'耐力',value:85,color:'#00d2ff'},{name:'被虐承受力',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'那个歌声……一定是天使在歌唱！', gallery:[]
+      },
+      {
+        name:'濑名祐希', nameJp:'瀬名 祐希', cv:'沢城みゆき', role:'protagonist', roleLabel:'主角',
+        age:'17岁', height:'不详', weight:'不详', affiliation:'广播室/漫画部（伪）', status:'歌手"洛丽·樱"/野崎的助手', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #cc3366, #aa1144)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/12/279944.webp',
+        personality:'性格粗鲁直率、完全不顾及他人感受的女生。嘴巴毒、行动力强，经常不请自来地闯入别人的地盘。但她的歌声却美如天籁，用"洛丽·樱"的名义在网络上发布歌曲后大受欢迎。粗鲁外表下偶尔流露出温柔的一面。完全不理解若松对她的暗恋。',
+        background:'野崎的漫画助手，负责添加效果字和特殊效果。同时也是网络歌手"洛丽·樱"的真实身份，她的歌曲在网上拥有大量粉丝。与若松是全剧最虐心的CP——若松深深暗恋天使般的洛丽·樱，却不知道她就是身边那个粗鲁的濑名。被野崎用作漫画中女主角的原型参考之一。',
+        abilities:[{name:'歌声',value:100,color:'#cc3366'},{name:'毒舌',value:95,color:'#aa1144'},{name:'效果字绘制',value:82,color:'#00d2ff'},{name:'粗鲁度',value:98,color:'#ffd93d'},{name:'不自知',value:100,color:'#f093fb'}],
+        titanForms:[], quote:'喂！你一个人在那发什么呆呢！干活了！', gallery:[]
+      }
+    ]
+  },
+  {
+    id: 'yuyuhakusho',
+    name: '幽游白书',
+    nameJp:'幽☆遊☆白書',
+    icon: '👻',
+    tags: ['热血', '格斗', '超自然', '冒险', '经典'],
+    episodes: '全112话',
+    year: '1992-1995',
+    studio: 'Studio Pierrot',
+    rating: '9.8',
+    bannerGradient: 'linear-gradient(135deg, #0a1a0a 0%, #22aa44 40%, #88ff88 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/1228/111372.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/1228/111372.jpg',
+    posterColor: '#22aa44',
+    seasons: [
+      { title:'TV版', subtitle:'幽游白书', episodes:'全112话', year:'1992年10月 - 1995年1月', studio:'Studio Pierrot', link:'https://www.bilibili.com/bangumi/media/md2338', linkLabel:'Bilibili' }
+    ],
+    synopsis: '不良少年浦饭幽助为了救一个小孩而被车撞死，但灵界并没有为他准备死亡的名额。经过一系列考验后，幽助被复活为灵界侦探，负责解决人间界和灵界之间发生的各种超自然事件。他与好友桑原和真、以及后来结识的妖狐蔵马和邪眼飞影组成了最强战斗团队，经历了暗黑武术大会、比皿之篇、仙水篇、魔界篇等一连串激烈的战斗。从街头不良少年成长为守护三界的英雄，幽助的冒险是热血格斗动漫的巅峰之作。',
+    characters: [
+      {
+        name:'浦饭幽助', nameJp:'浦飯 幽助', cv:'佐々木望', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'灵界侦探', status:'灵界侦探/魔族后裔', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #225522, #44aa44)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/130535.webp',
+        personality:'原本是性格暴躁、爱打架的不良少年，但在成为灵界侦探后逐渐展现出正义感和责任感。行动力强、直觉敏锐，战斗时充满热血。虽然表面上满不在乎，但内心深处非常重视同伴和家人。后期发现自己拥有魔族血统（雷禅之子），力量大幅提升。',
+        background:'14岁的不良少年，为救小孩而牺牲自己。由于灵界没有为他的死亡做好准备，他被赐予复活的机会，成为灵界侦探。在暗黑武术大会中获胜，在与仙水忍的战斗中觉醒魔族之力，发现自己是雷禅的儿子。最终在魔界篇中选择留在人间，继续过普通生活。',
+        abilities:[{name:'灵丸',value:95,color:'#44aa44'},{name:'灵光弹',value:90,color:'#225522'},{name:'格斗力',value:92,color:'#ff6666'},{name:'意志力',value:98,color:'#00d2ff'},{name:'同伴羁绊',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'不管对手是谁，我都不会退缩！这就是我的战斗方式！', gallery:[]
+      },
+      {
+        name:'桑原和真', nameJp:'桑原 和真', cv:'千葉繁', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'灵界侦探', status:'幽助的挚友/灵剑使用者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #cc6622, #ff8833)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/96678.webp',
+        personality:'表面上是粗暴的不良少年，实际上性格最正直善良。对幽助既是对手也是最好的朋友，两人之间的友情是全剧的核心。暗恋雪菜（飞影的妹妹），温柔的一面只有在雪菜面前才会展现。虽然实力不如其他队友，但拥有令人敬佩的勇气和毅力。',
+        background:'幽助的同班同学和长期对手，两人经常打架但也建立了深厚的友情。拥有灵剑能力，可以将灵力凝聚成实体武器。在与户愚吕兄弟的战斗中展现了惊人的成长。对雪菜一往情深，是全剧最温暖的情感线之一。',
+        abilities:[{name:'灵剑',value:85,color:'#cc6622'},{name:'灵剑二刀流',value:80,color:'#ff8833'},{name:'勇气',value:95,color:'#ff6666'},{name:'毅力',value:100,color:'#00d2ff'},{name:'正义感',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'幽助，你等着！总有一天我会超越你！', gallery:[]
+      },
+      {
+        name:'蔵马', nameJp:'蔵馬', cv:'緒方恵美', role:'protagonist', roleLabel:'主角',
+        age:'15岁（人间体）', height:'不详', weight:'不详', affiliation:'灵界侦探', status:'妖狐转世/植物操控者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #cc2244, #ff4466)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/58629.webp',
+        personality:'外表温文尔雅、成绩优异的优等生，实际上是魔界大名鼎鼎的盗贼妖狐转世。拥有冷静分析和精密计算的战斗风格，战斗时能瞬间判断对手弱点。真实形态为银发红眼的妖狐"南野秀一"，力量远超人类。性格温柔但战斗时冷酷无情，是团队中最可靠的战略家。',
+        background:'原为魔界著名的大盗贼妖狐，被猎人追杀后重伤，灵魂逃到人间转世为人类南野秀一。平时是一个温柔有礼的好学生，但战斗时会展现出妖狐的冷酷本质。擅长使用各种植物作为武器，如蔷薇鞭、魔界之花等。暗黑武术大会中展现了妖狐真身的压倒性力量。',
+        abilities:[{name:'妖狐真身',value:98,color:'#cc2244'},{name:'植物操控',value:100,color:'#ff4466'},{name:'智略',value:98,color:'#00d2ff'},{name:'冷静',value:95,color:'#f093fb'},{name:'分析力',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'看来你也做好了觉悟。那就让我来回应你吧——妖狐的力量。', gallery:[]
+      },
+      {
+        name:'飞影', nameJp:'飛影', cv:'檜山修之', role:'protagonist', roleLabel:'主角',
+        age:'不详（外貌约14岁）', height:'不详', weight:'不详', affiliation:'灵界侦探', status:'邪眼使用者/冰系妖族', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a4a, #4444aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/13/76077.webp',
+        personality:'冷酷傲慢的冰系妖族，话语尖酸刻薄但内心深处重视同伴。拥有象征力量的"邪眼"，可以释放各种火系忍术（与冰属性形成反差）。为了寻找失散的妹妹雪菜而来到人间界。与蔵马是搭档关系，两人配合默契。虽然嘴上说不在乎任何人，但行动上总是默默地保护同伴。',
+        background:'冰女族的幸存者，被遗弃后由盗贼集团抚养长大。移植了邪眼获得了压倒性的力量，但代价是消耗生命力。来到人间寻找同母异父的妹妹雪菜。与蔵马的搭档关系从敌对发展为生死之交。邪王篇中继承了冰刃之技的传承。是最受欢迎的角色之一。',
+        abilities:[{name:'邪王炎杀拳',value:100,color:'#4444aa'},{name:'邪王炎杀黑龙波',value:98,color:'#1a1a4a'},{name:'速度',value:95,color:'#00d2ff'},{name:'剑术',value:90,color:'#f093fb'},{name:'孤傲',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'我对付的敌人，轮不到你来插手。', gallery:[]
+      },
+      {
+        name:'牡丹', nameJp:'牡丹', cv:'三木眞一郎', role:'supporting', roleLabel:'核心配角',
+        age:'不详', height:'不详', weight:'不详', affiliation:'灵界', status:'灵界引路人/幽助的搭档', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #66aaff, #3388dd)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/501624.webp',
+        personality:'活泼开朗的灵界引路人，作为幽助的向导和联络人。性格乐观积极，经常在严肃的场合中活跃气氛。虽然是灵界的工作者，但对幽助等人充满了人情味。驾驶木桨在空中飞行的经典形象深入人心。',
+        background:'灵界派遣给幽助的引路人，负责引导死者前往灵界。在幽助成为灵界侦探后作为联络人和支援者参与各项任务。虽然战斗力不强，但在情报收集和后勤支援方面发挥了重要作用。是团队中最有人情味的成员。',
+        abilities:[{name:'灵界知识',value:85,color:'#66aaff'},{name:'情报收集',value:90,color:'#3388dd'},{name:'飞行',value:80,color:'#00d2ff'},{name:'活力',value:95,color:'#f093fb'},{name:'后勤支援',value:82,color:'#ffd93d'}],
+        titanForms:[], quote:'幽助，今天又有新的任务了哦！快起来！', gallery:[]
+      },
+      {
+        name:'幻海', nameJp:'幻海', cv:'林原めぐみ', role:'supporting', roleLabel:'核心配角',
+        age:'100岁以上', height:'不详', weight:'不详', affiliation:'人类', status:'灵界最强人类/幽助的师父', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #664422, #aa7744)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/93626.webp',
+        personality:'外表是年迈的老太太，但拥有压倒性的灵力，是灵界侦探组织的创始成员。性格严厉但充满智慧，对幽助的训练极为苛刻。年轻时是倾国倾城的美人，五十年前参加暗黑武术大会获得优胜。在暗黑武术大会中将灵力传给幽助后去世。',
+        background:'灵界侦探制度创立者之一，五十多年前在暗黑武术大会中击败户愚吕兄弟获得优胜。之后隐居修炼，收幽助为弟子进行特训。在暗黑武术大会决赛中与幽助配合击败户愚吕弟，将自己残余的灵力全部传给了幽助后安详离世。是全剧最伟大的导师角色。',
+        abilities:[{name:'灵光波',value:100,color:'#664422'},{name:'格斗技',value:98,color:'#aa7744'},{name:'灵力',value:100,color:'#ff6666'},{name:'教导力',value:95,color:'#00d2ff'},{name:'传承',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'幽助，这就是我最后的灵力……拜托了！', gallery:[]
+      },
+      {
+        name:'雪村萤子', nameJp:'雪村 螢子', cv:'天野由梨', role:'supporting', roleLabel:'配角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'人类', status:'幽助的女友', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ff88aa, #dd5577)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/81437.webp',
+        personality:'幽助的青梅竹马和恋人，性格温柔但有着火爆的一面。在幽助死后为他哭泣复活了他，是幽助回归人间的重要契机。虽然经常为幽助的冒险行为担心，但始终默默支持着他。',
+        background:'幽助的同班同学和青梅竹马，是幽助最重视的人之一。在幽助死亡时流下的眼泪触发了复活条件。虽然不是战斗成员，但她的存在是幽助战斗的动力和牵挂。',
+        abilities:[{name:'爱的力量',value:98,color:'#ff88aa'},{name:'温柔',value:95,color:'#dd5577'},{name:'坚韧',value:88,color:'#00d2ff'},{name:'料理',value:90,color:'#f093fb'},{name:'等待',value:95,color:'#ffd93d'}],
+        titanForms:[], quote:'幽助，你一定要平安回来！', gallery:[]
+      },
+      {
+        name:'户愚吕弟', nameJp:'戸愚呂弟', cv:'玄田哲章', role:'supporting', roleLabel:'反派',
+        age:'50岁以上', height:'不详', weight:'不详', affiliation:'暗黑武术会', status:'100%力量的战斗狂', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a0a0a, #661111)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/10/76897.webp',
+        personality:'暗黑武术会最强战士，可以将肌肉调整到1%到100%的任何强度。性格冷酷残暴，以杀人为乐。曾是幻海的对手，五十年前败给幻海后出卖同伴成为妖怪。在暗黑武术大会中与幽助展开了一场轰轰烈烈的决战，是全剧最经典的反派角色。',
+        background:'五十年前与幻海一起参加暗黑武术大会的同伴，败给幻海后心生怨恨，出卖灵魂成为妖怪。拥有将战斗力量以百分比精确控制的能力，100%力量时几乎无敌。在暗黑武术大会中被幽助在幻海的帮助下击败。死后与幻海一同前往灵界。',
+        abilities:[{name:'100%力量',value:100,color:'#661111'},{name:'肌肉强化',value:98,color:'#1a0a0a'},{name:'战斗经验',value:95,color:'#ff6666'},{name:'残忍',value:100,color:'#00d2ff'},{name:'执念',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'我不需要同伴……力量就是一切！', gallery:[]
+      },
+      {
+        name:'仙水忍', nameJp:'仙水 忍', cv:'石田彰', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'前灵界侦探', status:'S级灵力持有者/人类', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #222244, #446688)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/96946.webp',
+        personality:'前任灵界侦探，曾与户愚吕弟战斗后因目睹人类的残忍而彻底对人类绝望。性格沉稳冷静，拥有压倒性的S级灵力。为了打开魔界之门毁灭人类而行动，是幽游白书中期最强大的敌人。',
+        background:'曾是灵界侦探中的天才，在执行任务时目睹了人类对妖怪的残忍行为，精神崩溃后成为反叛者。收集了七个拥有特殊能力的同伴，企图打开连接魔界与人间的大门。在与幽助的决战中，幽助觉醒了魔族血脉。最终败给了幽助。',
+        abilities:[{name:'S级灵力',value:100,color:'#446688'},{name:'灵光弹',value:95,color:'#222244'},{name:'战斗智慧',value:92,color:'#ff6666'},{name:'绝对信念',value:98,color:'#00d2ff'},{name:'领导力',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'人类才是真正的怪物……这个世界需要被净化。', gallery:[]
+      },
+      {
+        name:'雪菜', nameJp:'雪菜', cv:'白鳥由里', role:'supporting', roleLabel:'配角',
+        age:'不详', height:'不详', weight:'不详', affiliation:'冰女族', status:'飞影的妹妹/冰泪石制造者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #aaddff, #77bbdd)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/78418.webp',
+        personality:'温柔善良的冰女族少女，是飞影同母异父的妹妹。拥有制造冰泪石的能力，曾被人利用。在飞影的暗中保护下获救。对哥哥飞影怀有深厚的感情，虽然飞影表面冷淡但一直在默默守护她。也是桑原暗恋的对象。',
+        background:'冰女族的幸存者，被人口贩卖组织捕获后被迫制造冰泪石。飞影为了救她而来到了人间界。获救后对飞影的存在一无所知，但后来渐渐知道了真相。与桑原之间也发展出了一段温暖的情感。',
+        abilities:[{name:'冰泪石制造',value:85,color:'#aaddff'},{name:'治愈能力',value:80,color:'#77bbdd'},{name:'善良',value:98,color:'#ff69b4'},{name:'纯真',value:95,color:'#00d2ff'},{name:'坚强',value:85,color:'#ffd93d'}],
+        titanForms:[], quote:'哥哥……你一直在保护我吗？', gallery:[]
+      },
+      {
+        name:'小阎王', nameJp:'コエンマ', cv:'田中真弓', role:'supporting', roleLabel:'配角',
+        age:'700岁以上', height:'不详', weight:'不详', affiliation:'灵界', status:'灵界统治者/阎魔王的儿子', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ffaa33, #dd8811)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/81535.webp',
+        personality:'外表是婴儿形态的灵界统治者，实际上是阎魔王的儿子。性格认真负责，经常在幼儿形态和少年形态之间切换。虽然看起来不太可靠，但在关键时刻能做出正确的判断。对幽助有着特殊的关照。',
+        background:'灵界的实际管理者，阎魔大王的儿子。因为父亲经常不在而代为处理灵界事务。创建了灵界侦探制度来处理人间界的异常事件。在幽助成为灵界侦探后一直作为他的上级提供任务和支持。',
+        abilities:[{name:'灵界权限',value:95,color:'#ffaa33'},{name:'封印术',value:90,color:'#dd8811'},{name:'智慧',value:88,color:'#00d2ff'},{name:'责任感',value:92,color:'#f093fb'},{name:'变身',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'我可是灵界的统治者！虽然……看起来像婴儿。', gallery:[]
+      }
+    ]
+  },
+  {
+    id: 'hunterxhunter',
+    name: '全职猎人',
+    nameJp:'HUNTER×HUNTER',
+    icon: '🎯',
+    tags: ['热血', '冒险', '格斗', '奇幻', '经典'],
+    episodes: '全148话',
+    year: '2011-2014',
+    studio: 'Madhouse',
+    rating: '9.9',
+    bannerGradient: 'linear-gradient(135deg, #1a2a0a 0%, #44aa22 40%, #aaff44 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/1337/99013.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/1337/99013.jpg',
+    posterColor: '#44aa22',
+    seasons: [
+      { title:'2011版', subtitle:'全职猎人 HUNTER×HUNTER', episodes:'全148话', year:'2011年10月 - 2014年9月', studio:'Madhouse', link:'https://www.bilibili.com/bangumi/media/md877/', linkLabel:'Bilibili' }
+    ],
+    synopsis: '12岁的少年小杰自幼在鲸鱼岛由阿姨咪咪养育，他的父亲金·富力士是传说中的猎人。为了寻找父亲的下落，小杰踏上了猎人考试的旅途。在考试中他结识了酷拉皮卡、雷欧力和奇犽，四人结为挚友。通过了猎人考试后，故事在天空竞技场、友客鑫市（幻影旅团篇）、贪婪之岛、嵌合蚁篇不断深入，从小规模的格斗冒险逐渐升级为影响世界格局的宏大叙事。嵌合蚁篇更被誉为动漫史上最精彩的篇章之一，对生命、人性与力量的思考令人震撼。全职猎人以其精妙的念能力体系、跌宕起伏的剧情和深刻的人物刻画，成为热血动漫的巅峰之作。',
+    characters: [
+      {
+        name:'小杰', nameJp:'ゴン＝フリークス', cv:'潘恵美', role:'protagonist', roleLabel:'主角',
+        age:'12岁', height:'154cm', weight:'49kg', affiliation:'猎人', status:'猎人/金·富力士之子', birthday:'5月5日', bloodType:'B型',
+        gradient:'linear-gradient(135deg, #44aa22, #88dd44)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/11/174517.webp',
+        personality:'纯真善良、乐观积极的天然少年，拥有野兽般敏锐的直觉和超常的身体素质。对朋友极度重视，对"自然"和"生命"有独特的感知力。面对危险时反而更加兴奋，属于"战斗天才"型角色。后期因凯特之死而黑化，展现了角色最黑暗的一面。',
+        background:'从小与阿姨在鲸鱼岛长大，从未见过父亲金。12岁时参加猎人考试，结识奇犽、酷拉皮卡和雷欧力。通过了猎人考试、天空竞技场修行后掌握了念能力。在嵌合蚁篇中为了替凯特复仇而强制成长（强制觉醒），代价是失去念能力。角色弧光从天真到黑暗再到释然，是全剧最深刻的成长线。',
+        abilities:[{name:'念能力·强化系',value:98,color:'#44aa22'},{name:'直觉',value:100,color:'#88dd44'},{name:'身体素质',value:95,color:'#ff6666'},{name:'成长潜力',value:100,color:'#00d2ff'},{name:'友谊',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'我要找到我爸爸，然后问他——你为什么要抛弃我！', gallery:[]
+      },
+      {
+        name:'奇犽', nameJp:'キルア＝ゾルディック', cv:'伊瀬茉莉也', role:'protagonist', roleLabel:'主角',
+        age:'12岁', height:'158cm', weight:'45kg', affiliation:'猎人/杀手家族', status:'猎人/佐尔迪克家族次子', birthday:'7月7日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #4466cc, #6688ff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/327920.webp',
+        personality:'出身杀手家族的银发少年，表面冷酷但实际上内心渴望普通人的友情。与小杰相遇后逐渐打开心扉，将小杰视为最重要的朋友。拥有可怕的战斗天赋和杀手的直觉，但一直在挣扎摆脱家族的控制。对小杰有着超越友情的执念。',
+        background:'佐尔迪克家族的次子，自幼接受暗杀训练，拥有远超同龄人的战斗力。离开家族后参加猎人考试结识小杰。掌握变化系念能力"电光石火"，可以将气变化为雷电进行攻击。在嵌合蚁篇中因为无法战胜普夫而陷入绝望，最终觉醒了神之疾风雷神拳。',
+        abilities:[{name:'电光石火',value:100,color:'#4466cc'},{name:'暗杀技术',value:98,color:'#6688ff'},{name:'速度',value:100,color:'#00d2ff'},{name:'战斗天赋',value:98,color:'#f093fb'},{name:'对小杰的执念',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'小杰是我最好的朋友……谁也不能伤害他！', gallery:[]
+      },
+      {
+        name:'酷拉皮卡', nameJp:'クラピカ', cv:'沢城みゆき', role:'protagonist', roleLabel:'主角',
+        age:'17岁', height:'171cm', weight:'59kg', affiliation:'猎人', status:'猎人/窟卢塔族幸存者', birthday:'4月4日', bloodType:'AB型',
+        gradient:'linear-gradient(135deg, #cc2244, #ff4466)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/549312.webp',
+        personality:'冷静理性、沉着优雅的窟卢塔族幸存者。拥有"火红眼"的特殊体质，情绪激动时瞳孔变为鲜红色。为了夺回同族被屠杀后夺走的火红眼而成为猎人。性格温柔但背负着沉重的复仇使命，在面对幻影旅团时展现出令人胆寒的冷酷一面。',
+        background:'窟卢塔族的最后幸存者，全族被幻影旅团屠杀后，珍贵的火红眼被出售到黑市。成为猎人后加入诺斯拉家族作为保镖，目的是夺回族人的火红眼。掌握特质系念能力，可以同时使用所有系的念能力（在火红眼状态下），并用锁链作为武器。在友客鑫篇中与幻影旅团展开了血腥的复仇战。',
+        abilities:[{name:'念能力·特质系',value:100,color:'#cc2244'},{name:'火红眼模式',value:98,color:'#ff4466'},{name:'锁链战斗',value:95,color:'#00d2ff'},{name:'智慧',value:95,color:'#f093fb'},{name:'复仇意志',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'那双眼睛是连接我与族人的纽带……我不会让任何人再夺走它们！', gallery:[]
+      },
+      {
+        name:'雷欧力', nameJp:'レオリオ', cv:'藤原啓治', role:'protagonist', roleLabel:'主角',
+        age:'19岁', height:'193cm', weight:'85kg', affiliation:'猎人', status:'猎人/医学生', birthday:'3月3日', bloodType:'O型',
+        gradient:'linear-gradient(135deg, #225599, #4477bb)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/11/549311.webp',
+        personality:'外表粗暴、性格直率的青年，参加猎人考试的目的是为了赚钱读医大。虽然看起来不太可靠，但实际上是最有人情味和正义感的角色。重视同伴胜过一切，在关键时刻总能发挥出令人意想不到的力量。与小杰的相遇改变了他的人生轨迹。',
+        background:'为了成为医生而参加猎人考试的高大青年。虽然表面上是为了钱，但实际上是因为好友帕尼斯特因病去世而发誓要成为优秀的医生。在猎人考试中结识小杰等人后，友情成为他最重要的宝物。掌握强化系念能力，使用简单的拳套战斗。在选举篇中展现了令人意外的领导才能。',
+        abilities:[{name:'念能力·强化系',value:82,color:'#225599'},{name:'拳击',value:85,color:'#4477bb'},{name:'正义感',value:95,color:'#ff6666'},{name:'领导力',value:88,color:'#00d2ff'},{name:'医术潜力',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'我虽然又笨又不靠谱，但我知道什么是对的事！', gallery:[]
+      },
+      {
+        name:'西索', nameJp:'ヒソカ', cv:'浪川大輔', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'187cm', weight:'不详', affiliation:'猎人/幻影旅团', status:'天才战斗狂/变幻系念能力者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #cc2266, #ff4488)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/174561.webp',
+        personality:'神秘的战斗天才，以"正反判断"决定行动准则。性格疯狂、变态、充满魅力，将战斗视为最大的快乐。对小杰和酷拉皮卡有着扭曲的"爱"，认为他们是需要成长的"果实"。可以随时加入或离开幻影旅团，完全不受约束。是全剧最具魅力的反派角色。',
+        background:'参加了猎人考试的神秘强者，实力远超常人。掌握变幻系念能力"轻薄的假象"和"伸缩自在的爱"，可以用念构成的橡皮筋作为武器。曾是幻影旅团的4号成员，后因团长被限制而退出。在友客鑫篇中与库洛洛展开了一场惊天动地的决战。',
+        abilities:[{name:'轻薄的假象',value:100,color:'#cc2266'},{name:'伸缩自在的爱',value:98,color:'#ff4488'},{name:'战斗力',value:100,color:'#ff6666'},{name:'疯狂',value:100,color:'#00d2ff'},{name:'魅力',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'嗯……♡ 这个果实（小杰）还需要再成长一下呢。', gallery:[]
+      },
+      {
+        name:'库洛洛·鲁西鲁', nameJp:'クロロ＝ルシルフル', cv:'宮野真守', role:'supporting', roleLabel:'反派',
+        age:'26岁', height:'177cm', weight:'68kg', affiliation:'幻影旅团', status:'幻影旅团团长/特质系念能力者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a3a, #4455aa)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/182387.webp',
+        personality:'幻影旅团的团长，拥有冷静沉着又充满魅力的领袖气质。掌握特质系念能力"盗贼的极意"，可以偷取其他念能力者的能力并存放在自己的书中。对团员有着绝对的统帅力，但内心深处有着对同伴的独特理解。是全剧最具智慧的反派之一。',
+        background:'幻影旅团的创始人兼团长，领导着12名强大的念能力者。曾经带领旅团屠杀窟卢塔族夺走火红眼。在友客鑫篇中与西索展开了一场史诗级的战斗。掌握"盗贼的极意"，可以从他人身上偷取念能力并自由使用。在王位继承战篇中有着重要的行动。',
+        abilities:[{name:'盗贼的极意',value:100,color:'#4455aa'},{name:'战斗智慧',value:98,color:'#1a1a3a'},{name:'领导力',value:100,color:'#ff6666'},{name:'多重能力',value:95,color:'#00d2ff'},{name:'魅力',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'能不能别挡我的路？……你这样的，还差得远呢。', gallery:[]
+      },
+      {
+        name:'尼特罗会长', nameJp:'ネテロ＝ウイグル', cv:'銀河万丈', role:'supporting', roleLabel:'核心配角',
+        age:'110岁以上', height:'不详', weight:'不详', affiliation:'猎人协会', status:'猎人协会会长/强化系最强', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #444422, #888844)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/7/257355.webp',
+        personality:'猎人协会的会长，年过百岁但身体健壮如青年。性格看似轻松愉快（喜欢猜拳），实际上拥有压倒性的实力和深邃的智慧。在嵌合蚁篇中亲赴前线，为了人类的存亡而战。是全剧最令人敬重的角色。',
+        background:'猎人协会第12代会长，年轻时在念的修行中获得了压倒性的力量。在嵌合蚁篇中，为了消灭蚁王而亲自率领讨伐队前往嵌合蚁巢穴。最终以"零乃心"的终极招式与蚁王梅路艾姆同归于尽，是全剧最悲壮壮烈的场景之一。',
+        abilities:[{name:'百式观音',value:100,color:'#888844'},{name:'零乃心',value:100,color:'#444422'},{name:'强化系巅峰',value:100,color:'#ff6666'},{name:'经验',value:100,color:'#00d2ff'},{name:'牺牲精神',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'人类那无限的恶意，也是人类的光辉所在。', gallery:[]
+      },
+      {
+        name:'蚁王梅路艾姆', nameJp:'メルエム', cv:'内山昂輝', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'嵌合蚁', status:'嵌合蚁之王/最强生物', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #224433, #448866)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/243861.webp',
+        personality:'嵌合蚁的王者，拥有凌驾于所有生物之上的力量和智慧。最初冷酷无情，将其他生物视为食物。但在遇到盲眼棋手小麦后，内心深处开始萌生人性。是全剧角色弧光最深刻的反派——从绝对的力量崇拜者，到愿意为小麦放弃一切的"人"。',
+        background:'嵌合蚁的女王所生的最强个体，继承了大嵌合蚁的力量并超越了所有先代。在与尼特罗会长的决战中以惨胜存活，但失去了记忆。恢复记忆后被小麦的棋艺所触动，逐渐理解了人类的价值。最终在小麦身边安详地死去，完成了从"怪物"到"人"的蜕变。',
+        abilities:[{name:'压倒性力量',value:100,color:'#448866'},{name:'智慧成长',value:100,color:'#224433'},{name:'气量',value:100,color:'#ff6666'},{name:'人性觉醒',value:98,color:'#00d2ff'},{name:'对小ing的爱',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'这个世界上……存在着即使是我也无法战胜的力量。', gallery:[]
+      },
+      {
+        name:'比司吉', nameJp:'ビスケ＝クルーガー', cv:'横山智佐', role:'supporting', roleLabel:'配角',
+        age:'57岁', height:'不详', weight:'不详', affiliation:'猎人', status:'二星级猎人/小杰和奇犽的师傅', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ff88aa, #dd5577)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/5/194667.webp',
+        personality:'外表是可爱的小女孩，实际是57岁的肌肉大叔（真正的形态）。性格活泼开朗，喜欢美少年。作为小杰和奇犽的念能力老师，教导方式严格但有效。拥有令人恐惧的强化系念能力。',
+        background:'二星级猎人，接受小杰和奇犽的委托后成为他们在贪婪之岛篇的师傅。教导他们念能力的基础和应用技巧。真实形态是肌肉发达的中年男性，平时用念维持小女孩的外貌。是天空竞技场的管理员，实力深不可测。',
+        abilities:[{name:'念能力·强化系',value:95,color:'#ff88aa'},{name:'变化形态',value:88,color:'#dd5577'},{name:'教导力',value:95,color:'#00d2ff'},{name:'经验',value:98,color:'#f093fb'},{name:'战斗力',value:92,color:'#ffd93d'}],
+        titanForms:[], quote:'你们两个还差得远呢！给我继续修炼！', gallery:[]
+      },
+      {
+        name:'伊路米', nameJp:'イルミ＝ゾルディック', cv:'日高法子', role:'supporting', roleLabel:'反派',
+        age:'20岁以上', height:'不详', weight:'不详', affiliation:'佐尔迪克家族', status:'佐尔迪克家族长子/操作系杀手', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #332233, #664466)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/174521.webp',
+        personality:'奇犽的大哥，性格表面温柔实际上冷酷无情。将奇犽视为"家族的所有物"，对弟弟有着扭曲的控制欲。作为操作系念能力者，可以用细针操控他人行动。是奇犽最恐惧的存在。',
+        background:'佐尔迪克家族的长子，接受过最严格的暗杀训练。掌握操作系念能力，可以用嵌入目标的细针来操控其行为和思维。对奇犽施加了"来我身边"的念针，限制了奇犽的行动。在选举篇中展现了令人恐惧的实力和手段。',
+        abilities:[{name:'操作系念能力',value:95,color:'#664466'},{name:'暗杀技术',value:98,color:'#332233'},{name:'控制力',value:100,color:'#ff6666'},{name:'诡计',value:92,color:'#00d2ff'},{name:'对奇犽的执念',value:95,color:'#ffd93d'}],
+        titanForms:[], quote:'奇犽是我的……他应该听我的话。', gallery:[]
+      }
+    ]
+  },
+  {
+    id: 'katekyohitman',
+    name: '家庭教师HITMAN REBORN!',
+    nameJp:'家庭教師ヒットマンREBORN!',
+    icon: '🔫',
+    tags: ['热血', '战斗', '黑手党', '日常', '成长'],
+    episodes: '全203话',
+    year: '2006-2010',
+    studio: 'Artland',
+    rating: '9.9',
+    bannerGradient: 'linear-gradient(135deg, #1a0a2a 0%, #ff4400 40%, #ffaa00 100%)',
+    posterImage: 'https://cdn.myanimelist.net/r/400x560/images/anime/1531/142751.jpg',
+    bannerImage: 'https://cdn.myanimelist.net/images/anime/1531/142751.jpg',
+    posterColor: '#ff4400',
+    seasons: [
+      { title:'TV版', subtitle:'家庭教师HITMAN REBORN!', episodes:'全203话', year:'2006年10月 - 2010年9月', studio:'Artland', link:'https://www.bilibili.com/bangumi/media/md1376/', linkLabel:'Bilibili' }
+    ],
+    synopsis: '国中生泽田纲吉是一个运动和学习都不行的"废柴纲"，某天突然被一个穿着黑西装、手持枪械的婴儿——来自意大利黑手党彭格列家族的王牌杀手Reborn——闯入了生活。Reborn宣称纲吉是彭格列家族第十代首领的候选人，要用"死气弹"来对他进行特训。从此纲吉身边聚集了一群守护者——狱寺隼人、山本武、云雀恭弥、六道骸、笹川了平等，在对抗各种黑手党势力和未来篇中马雷家族的威胁下，从一个懦弱废柴成长为真正的彭格列十代首领。故事从搞笑日常起步，逐步发展为热血激战，角色阵容丰富，战斗体系独特。',
+    characters: [
+      {
+        name:'泽田纲吉', nameJp:'澤田 綱吉', cv:'国分優香里', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'157cm', weight:'不详', affiliation:'彭格列家族', status:'彭格列十代首领候补', birthday:'10月14日', bloodType:'A型',
+        gradient:'linear-gradient(135deg, #ff6600, #ff9933)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/15/76730.webp',
+        personality:'最初是个运动和学习都不行的"废柴纲"，性格懦弱胆小、容易哭。但在Reborn的训练下逐渐展现出作为首领的潜质——对同伴的深厚感情、绝境中的决断力、以及"不愿看到任何人受伤"的温柔。虽然总想逃避责任，但关键时刻从不退缩。是典型的"成长型"主角。',
+        background:'日本普通中学生，被认定是意大利最强黑手党彭格列家族第十代首领的血脉。在Reborn的死气弹特训下逐步成长，汇集了六位守护者——岚、雨、晴、雷、云、雾——组成了最强大的彭格列守护者团队。在未来篇中穿越到十年后的世界，面对马雷家族的威胁，最终觉醒了真彭格列之血的超死气模式。',
+        abilities:[{name:'超死气模式',value:98,color:'#ff6600'},{name:'X手套',value:95,color:'#ff9933'},{name:'首领气质',value:90,color:'#ff6666'},{name:'同伴羁绊',value:100,color:'#00d2ff'},{name:'成长力',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'我不要当黑手党首领！但是……为了保护大家，我必须战斗！', gallery:[]
+      },
+      {
+        name:'Reborn', nameJp:'リボーン', cv:'ニーコ', role:'protagonist', roleLabel:'主角',
+        age:'不详（外表婴儿）', height:'40cm', weight:'不详', affiliation:'彭格列家族', status:'彭格列家族王牌杀手/纲吉的家庭教师', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #222222, #555555)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/12/64542.webp',
+        personality:'彭格列家族最强的杀手，因为诅咒而变成婴儿形态。性格冷酷无情又滑稽搞怪，对纲吉的训练方式简单粗暴——直接开枪。虽然总是面无表情地捉弄纲吉，但实际上对纲吉的成长有着深切的期待。经常切换可爱的脸和恐怖的脸。',
+        background:'来自意大利的世界最强杀手婴儿，受彭格列九代首领委托来训练纲吉成为十代首领。使用"死气弹"射击纲吉让他复活并获得特殊能力。虽然外表是婴儿，但拥有远超成人的战斗力和情报网络。在故事中既是纲吉的导师也是最强的战力后盾。',
+        abilities:[{name:'死气弹',value:100,color:'#555555'},{name:'战斗能力',value:100,color:'#222222'},{name:'教导力',value:95,color:'#ff6666'},{name:'情报网',value:98,color:'#00d2ff'},{name:'变脸',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'Ciao-su！纲吉，你还没有绝望吗？那还差得远呢！', gallery:[]
+      },
+      {
+        name:'狱寺隼人', nameJp:'獄寺 隼人', cv:'市瀬秀和', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'彭格列家族', status:'岚之守护者', birthday:'9月9日', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #8833cc, #bb66ff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/8/61975.webp',
+        personality:'来自意大利的转学生，银发红眼的帅哥。最初对纲吉怀有敌意（认为他不够格当首领），但在被打败后对他绝对忠诚，称呼为"十代首领"。性格认真热血、忠于职守，擅长使用炸弹进行战斗。是纲吉最忠实的守护者。',
+        background:'原为意大利黑手党的成员，母亲是日本人。为了追随纲吉而转到他的学校。作为彭格列的岚之守护者，擅长使用炸药进行远程轰炸战斗。武器是" Sistema C.A.I."多重炸弹系统。在未来篇中展现了强大的成长，是守护者中最忠诚的存在。',
+        abilities:[{name:'炸弹术',value:98,color:'#8833cc'},{name:'忠诚',value:100,color:'#bb66ff'},{name:'战斗策略',value:88,color:'#00d2ff'},{name:'热血',value:95,color:'#ff6666'},{name:'多重武器',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'十代首领！请让我为您效力！', gallery:[]
+      },
+      {
+        name:'山本武', nameJp:'山本 武', cv:'井上剛', role:'protagonist', roleLabel:'主角',
+        age:'14岁', height:'不详', weight:'不详', affiliation:'彭格列家族', status:'雨之守护者', birthday:'4月24日', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2266aa, #4499dd)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/9/161411.webp',
+        personality:'运动万能的热血少年，棒球部的王牌投手。性格开朗阳光，对任何事都保持乐观。将黑手党的战斗也当成"游戏"来享受。虽然看起来不太可靠，但在战斗中展现出令人恐惧的实力。是纲吉身边最自然的朋友。',
+        background:'纲吉的同班同学，棒球部的明星选手。被Reborn选中成为彭格列的雨之守护者后，以独特的剑术"时雨苍燕流"进行战斗。将一切都视为游戏的天性让他在战斗中反而更加冷静出色。在未来篇中成长为守护者中最强的战力之一。',
+        abilities:[{name:'时雨苍燕流',value:98,color:'#2266aa'},{name:'运动能力',value:100,color:'#4499dd'},{name:'天赋',value:95,color:'#ff6666'},{name:'乐观',value:100,color:'#00d2ff'},{name:'直觉',value:90,color:'#ffd93d'}],
+        titanForms:[], quote:'哈哈，这个看起来很有趣嘛！', gallery:[]
+      },
+      {
+        name:'云雀恭弥', nameJp:'雲雀 恭弥', cv:'近藤隆', role:'protagonist', roleLabel:'主角',
+        age:'不详', height:'169cm', weight:'不详', affiliation:'并盛中学/彭格列家族', status:'云之守护者/风纪委员长', birthday:'5月5日', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #553344, #886677)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/2/107841.webp',
+        personality:'并盛中学风纪委员长，性格孤高冷漠、极度讨厌群聚。拥有压倒性的战斗力，是整部作品中最强的守护者之一。虽然与彭格列保持距离，但在关键时刻总是出手相助。口癖是"咬杀"（かみ殺す）。是全剧最受欢迎的角色之一。',
+        background:'并盛中学的风纪委员长，拥有远超常人的战斗能力。掌握云系特有的"增殖"特性，使用两把铁爪作为武器。虽然是彭格列的云之守护者，但只按自己的意愿行动，拒绝加入任何组织。唯一无法忍受的是并盛中学的纪律被破坏。在未来篇中展现了足以与幻骑士对抗的恐怖实力。',
+        abilities:[{name:'云之波动',value:100,color:'#886677'},{name:'战斗能力',value:100,color:'#553344'},{name:'孤高',value:100,color:'#ff6666'},{name:'云针',value:95,color:'#00d2ff'},{name:'咬杀',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'群聚的话……就咬杀你们。', gallery:[]
+      },
+      {
+        name:'六道骸', nameJp:'六道 骸', cv:'飯田利信', role:'protagonist', roleLabel:'反派→守护者',
+        age:'不详', height:'不详', weight:'不详', affiliation:'彭格列家族', status:'雾之守护者/曾经的逃犯', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2233cc, #5566ff)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/16/47183.webp',
+        personality:'最初的登场是以邪恶逃犯的身份出现，拥有可以附身他人的"六道轮回"能力。性格恶劣扭曲，以折磨他人为乐。但在后续故事中逐渐展现出复杂的性格——既有对同伴的珍视，也有对弱者的保护。是全剧最立体的角色之一。',
+        background:'原为黑手党中的危险人物，拥有可以附身并控制他人的能力。最初作为反派与纲吉对立，但后来被收容在彭格列的水牢中。在未来篇中以另一种方式帮助了纲吉，实际上成为了彭格列的雾之守护者。与库洛姆·髑髅之间有着特殊的关系，将自己的力量分给她。',
+        abilities:[{name:'六道轮回',value:100,color:'#5566ff'},{name:'附身术',value:98,color:'#2233cc'},{name:'三叉戟战斗',value:95,color:'#ff6666'},{name:'幻术',value:92,color:'#00d2ff'},{name:'复杂性',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'你现在能理解这种痛苦了吗？', gallery:[]
+      },
+      {
+        name:'笹川了平', nameJp:'笹川 了平', cv:'木内秀信', role:'protagonist', roleLabel:'主角',
+        age:'不详', height:'不详', weight:'不详', affiliation:'彭格列家族', status:'晴之守护者/拳击手', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #ddaa22, #ffcc44)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/14/107843.webp',
+        personality:'笹川京子的哥哥，极端热血的拳击手。口头禅是"极限"（极限に），做什么事都要达到极限。性格单纯热血，保护妹妹心切。虽然头脑简单但战斗中非常可靠。是纲吉的晴之守护者。',
+        background:'京子的哥哥，拳击部的王牌。被Reborn选中成为晴之守护者。晴之属性代表"活性化"，他的拳套可以储存太阳能量进行战斗。在战斗中从不放弃，即使身受重伤也坚持战斗到极限。虽然是最"简单"的守护者，但纯粹的勇气令人敬佩。',
+        abilities:[{name:'极限拳击',value:92,color:'#ddaa22'},{name:'太阳能量',value:88,color:'#ffcc44'},{name:'耐力',value:100,color:'#ff6666'},{name:'热血',value:100,color:'#00d2ff'},{name:'极限精神',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'这是极限的左直拳！', gallery:[]
+      },
+      {
+        name:'蓝波', nameJp:'ランボ', cv:'陶山章央', role:'protagonist', roleLabel:'主角',
+        age:'5岁', height:'不详', weight:'不详', affiliation:'彭格列家族/波维诺家族', status:'雷之守护者', birthday:'5月15日', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #44cc44, #77ff77)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/6/103074.webp',
+        personality:'来自意大利的黑手党杀手，虽然只有5岁但手里总是拿着手榴弹。性格调皮捣蛋、爱哭鬼，遇到困难就喊"要蓝波大人来收拾你"然后使用十年火箭筒变成25岁的自己。25岁的蓝波成熟帅气且战斗力超强，但效果只有5分钟。',
+        background:'意大利波维诺家族的杀手（虽然是5岁小孩），被送到日本执行任务后住在纲吉家。掌握雷系的电气攻击能力。标志性武器是十年火箭筒，可以让自己与十年后的自己互换。作为彭格列的雷之守护者，虽然年龄最小但拥有不可小觑的战斗力。',
+        abilities:[{name:'电气攻击',value:82,color:'#44cc44'},{name:'十年火箭筒',value:88,color:'#77ff77'},{name:'25岁战斗力',value:90,color:'#ff6666'},{name:'哭闹',value:100,color:'#00d2ff'},{name:'成长潜力',value:95,color:'#ffd93d'}],
+        titanForms:[], quote:'要蓝波大人来收拾你！哇啊啊——！（开始哭）', gallery:[]
+      },
+      {
+        name:'XANXUS', nameJp:'XANXUS', cv:'池田政典', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'188cm', weight:'不详', affiliation:'彭格列家族', status:'彭格列九代首领之子/岚之守护者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #881122, #cc3344)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/3/146401.webp',
+        personality:'彭格列九代首领的亲生儿子（后来发现是养子），性格暴躁好战、目中无人。认为自己是彭格列正统的首领继承人，因此对纲吉充满敌意。拥有使用"愤怒之炎"进行战斗的能力，愤怒程度越高力量越强。',
+        background:'自称是彭格列九代首领的亲生儿子，为了争夺十代首领之位发动了"彭格列指环争夺战"。领导着自己的守护者团队（瓦利亚）与纲吉等人展开了激烈的战斗。败给纲吉后被冰封，后来在继承式篇中再次登场。拥有释放和吸收火焰的能力。',
+        abilities:[{name:'愤怒之炎',value:98,color:'#cc3344'},{name:'战斗狂热',value:100,color:'#881122'},{name:'领导力',value:90,color:'#ff6666'},{name:'双枪战斗',value:92,color:'#00d2ff'},{name:'傲慢',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'trash（废物），你没有资格站在我面前！', gallery:[]
+      },
+      {
+        name:'白兰', nameJp:'白蘭', cv:'大山鎬則', role:'supporting', roleLabel:'反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'马雷家族', status:'马雷家族首领', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #eeeedd, #ffffee)', emoji:'', image:'https://cdn.myanimelist.net/r/300x420/images/characters/4/90548.webp',
+        personality:'马雷家族的首领，性格温和乐观到令人不寒而栗。拥有可以在平行世界间移动的能力，因此可以预见几乎所有未来。是最令人恐惧的反派——不是因为他有多强大，而是因为他完全无法被预测。平时看起来像个无害的青年，喜欢吃棉花糖。',
+        background:'马雷家族（彭格列的对立家族）的首领，在未来篇中作为最终反派登场。拥有可以到达其他平行世界的"翅膀"，因此掌握了几乎所有可能的未来。认为所有的选择都已经在其他世界中存在，因此对这个世界漠不关心。最终被纲吉等人联手击败。',
+        abilities:[{name:'平行世界移动',value:100,color:'#eeeedd'},{name:'预见未来',value:100,color:'#ffffee'},{name:'真实之弹',value:95,color:'#ff6666'},{name:'恐怖气场',value:98,color:'#00d2ff'},{name:'不可预测',value:100,color:'#ffd93d'}],
+        titanForms:[], quote:'这个世界已经无趣了……让我去看看其他世界吧。', gallery:[]
+      }
+    ]
+  }
+];
+
+// ========== 库洛牌数据 ==========
+const clowCards = [
+  { name:'风', nameJp:'風', en:'WINDY', attr:'月亮', ability:'自由控制空气和风元素', episode:'第1集', img:'https://static.wikia.nocookie.net/ccs/images/a/ac/ClowWindy.jpg/revision/latest?cb=20220525095325' },
+  { name:'影', nameJp:'影', en:'SHADOW', attr:'月亮', ability:'自由控制自身与他人的影子', episode:'第2集', img:'https://static.wikia.nocookie.net/ccs/images/c/c8/ClowShadow.jpg/revision/latest?cb=20220525095051' },
+  { name:'幻', nameJp:'幻', en:'ILLUSION', attr:'太阳', ability:'让对手看到心中思念之人并产生幻觉', episode:'第6集', img:'https://static.wikia.nocookie.net/ccs/images/2/2d/ClowIllusion.jpg/revision/latest?cb=20220525094314' },
+  { name:'花', nameJp:'花', en:'FLOWER', attr:'大地', ability:'制造各种花卉', episode:'第10集', img:'https://static.wikia.nocookie.net/ccs/images/d/da/ClowFlower.jpg/revision/latest?cb=20220525093951' },
+  { name:'剑', nameJp:'剣', en:'SWORD', attr:'太阳', ability:'将封印杖变为剑，使用者为剑术高手', episode:'第3集', img:'https://static.wikia.nocookie.net/ccs/images/2/2c/ClowSword.jpg/revision/latest?cb=20220525095422' },
+  { name:'跳', nameJp:'跳', en:'JUMP', attr:'太阳', ability:'让使用者拥有惊人跳跃力', episode:'第5集', img:'https://static.wikia.nocookie.net/ccs/images/f/ff/ClowJump.jpg/revision/latest?cb=20220525094320' },
+  { name:'翔', nameJp:'翔', en:'FLY', attr:'月亮', ability:'让使用者拥有飞翔能力', episode:'第3集（首获）', img:'https://static.wikia.nocookie.net/ccs/images/3/3c/ClowFly.jpg/revision/latest?cb=20220525094239' },
+  { name:'盾', nameJp:'盾', en:'SHIELD', attr:'太阳', ability:'保护使用者想保护的事物', episode:'第11集', img:'https://static.wikia.nocookie.net/ccs/images/a/a7/ClowShield.jpg/revision/latest?cb=20220525095059' },
+  { name:'灯', nameJp:'灯', en:'GLOW', attr:'太阳', ability:'产生小型萤光照亮事物', episode:'第7集', img:'https://static.wikia.nocookie.net/ccs/images/b/b4/ClowGlow.jpg/revision/latest?cb=20220525094308' },
+  { name:'水', nameJp:'水', en:'WATERY', attr:'月亮', ability:'自由控制水元素，四大属性之一', episode:'第3集', img:'https://static.wikia.nocookie.net/ccs/images/5/55/ClowWatery.jpg/revision/latest?cb=20220525095337' },
+  { name:'雨', nameJp:'雨', en:'RAIN', attr:'水', ability:'让特定地点降雨', episode:'第4集', img:'https://static.wikia.nocookie.net/ccs/images/b/b2/ClowRain.jpg/revision/latest?cb=20220525094916' },
+  { name:'树', nameJp:'树', en:'WOOD', attr:'月亮', ability:'自由控制树木生长', episode:'第4集', img:'https://static.wikia.nocookie.net/ccs/images/e/e8/ClowWood.jpg/revision/latest?cb=20220525095319' },
+  { name:'雾', nameJp:'雾', en:'MIST', attr:'水', ability:'起雾迷惑敌人或用毒雾腐蚀物体', episode:'第14集', img:'https://static.wikia.nocookie.net/ccs/images/4/4f/ClowMist.jpg/revision/latest?cb=20220525094850' },
+  { name:'岚', nameJp:'嵐', en:'STORM', attr:'风', ability:'刮起飓风和暴雨', episode:'第15集', img:'https://static.wikia.nocookie.net/ccs/images/5/58/ClowStorm.jpg/revision/latest?cb=20220525095159' },
+  { name:'浮', nameJp:'浮', en:'FLOAT', attr:'风', ability:'让人或物浮在半空中', episode:'第15集', img:'https://static.wikia.nocookie.net/ccs/images/2/26/ClowFloat.jpg/revision/latest?cb=20220525094025' },
+  { name:'拔', nameJp:'抜', en:'THROUGH', attr:'大地', ability:'让使用者穿过墙壁，魔力越强可穿越越厚', episode:'第18集', img:'https://static.wikia.nocookie.net/ccs/images/d/d0/ClowThrough.jpg/revision/latest?cb=20220525095413' },
+  { name:'雪', nameJp:'雪', en:'SNOW', attr:'水', ability:'同时降下瑞雪和暴雪', episode:'第36集', img:'https://static.wikia.nocookie.net/ccs/images/2/2a/ClowSnow.jpg/revision/latest?cb=20220525095139' },
+  { name:'时', nameJp:'時', en:'TIME', attr:'月亮', ability:'让时间倒退、暂停、控制时间速度', episode:'第12集', img:'https://static.wikia.nocookie.net/ccs/images/6/62/ClowTime.jpg/revision/latest?cb=20220525095358' },
+  { name:'力', nameJp:'力', en:'POWER', attr:'太阳', ability:'让使用者力大无穷', episode:'第13集', img:'https://static.wikia.nocookie.net/ccs/images/c/c8/ClowPower.jpg/revision/latest?cb=20220525094908' },
+  { name:'大', nameJp:'大', en:'BIG', attr:'太阳', ability:'让指定的人或物变大', episode:'第31集', img:'https://static.wikia.nocookie.net/ccs/images/8/8b/ClowBig.jpg/revision/latest?cb=20220525093432' },
+  { name:'小', nameJp:'小', en:'LITTLE', attr:'太阳', ability:'让指定的人或物变小', episode:'第24集', img:'https://static.wikia.nocookie.net/ccs/images/c/cd/ClowLittle.jpg/revision/latest?cb=20220525094400' },
+  { name:'静', nameJp:'静', en:'SILENT', attr:'月亮', ability:'让周遭保持宁静，驱逐噪音', episode:'第21集', img:'https://static.wikia.nocookie.net/ccs/images/b/b7/ClowSilent.jpg/revision/latest?cb=20220525095116' },
+  { name:'消', nameJp:'消', en:'ERASE', attr:'月亮', ability:'使人和事物消失', episode:'第7集', img:'https://static.wikia.nocookie.net/ccs/images/5/57/ClowErase.jpg/revision/latest?cb=20220525093753' },
+  { name:'光', nameJp:'光', en:'LIGHT', attr:'太阳', ability:'发出强光，太阳属性王牌', episode:'第43集', img:'https://static.wikia.nocookie.net/ccs/images/6/66/ClowLight.jpg/revision/latest?cb=20260105162930' },
+  { name:'暗', nameJp:'暗', en:'DARK', attr:'月亮', ability:'产生黑暗空间，月亮属性王牌', episode:'第43集', img:'https://static.wikia.nocookie.net/ccs/images/5/56/ClowDark.jpg/revision/latest?cb=20220525093634' },
+  { name:'火', nameJp:'火', en:'FIREY', attr:'太阳', ability:'自由控制火元素，四大属性之一', episode:'第35集', img:'https://static.wikia.nocookie.net/ccs/images/1/12/ClowFirey.jpg/revision/latest?cb=20220525094157' },
+  { name:'地', nameJp:'地', en:'EARTHY', attr:'太阳', ability:'自由控制土元素，四大属性之一', episode:'第46集', img:'https://static.wikia.nocookie.net/ccs/images/7/72/ClowEarthy.jpg/revision/latest?cb=20220525093735' },
+  { name:'雷', nameJp:'雷', en:'THUNDER', attr:'太阳', ability:'自由控制闪电', episode:'第8集', img:'https://static.wikia.nocookie.net/ccs/images/d/da/ClowThunder.jpg/revision/latest?cb=20220525095406' },
+  { name:'斗', nameJp:'闘', en:'FIGHT', attr:'太阳', ability:'让使用者为格斗家', episode:'第20集', img:'https://static.wikia.nocookie.net/ccs/images/1/16/ClowFight.jpg/revision/latest?cb=20220525093806' },
+  { name:'击', nameJp:'撃', en:'SHOT', attr:'太阳', ability:'发射类似弹丸的攻击波动', episode:'第28集', img:'https://static.wikia.nocookie.net/ccs/images/7/7c/ClowShot.jpg/revision/latest?cb=20220525095106' },
+  { name:'冰', nameJp:'凍', en:'FREEZE', attr:'水', ability:'让人或物结冻、区域温度急剧下降', episode:'第33集', img:'https://static.wikia.nocookie.net/ccs/images/0/00/ClowFreeze.jpg/revision/latest?cb=20220525094300' },
+  { name:'云', nameJp:'雲', en:'CLOUD', attr:'风', ability:'自由控制云', episode:'第16集', img:'https://static.wikia.nocookie.net/ccs/images/a/a2/ClowCloud.jpg/revision/latest?cb=20220525093540' },
+  { name:'沙', nameJp:'砂', en:'SAND', attr:'大地', ability:'自由控制沙', episode:'第20集', img:'https://static.wikia.nocookie.net/ccs/images/1/1e/ClowSand.jpg/revision/latest?cb=20220525095043' },
+  { name:'甘', nameJp:'甘', en:'SWEET', attr:'大地', ability:'让特定事物变得很甜', episode:'第29集', img:'https://static.wikia.nocookie.net/ccs/images/e/e0/ClowSweet.jpg/revision/latest?cb=20220525095432' },
+  { name:'秤', nameJp:'秤', en:'LIBRA', attr:'大地', ability:'判断谎言与真话', episode:'第16集', img:'https://static.wikia.nocookie.net/ccs/images/7/75/ClowLibra.jpg/revision/latest?cb=20220525094346' },
+  { name:'锭', nameJp:'錠', en:'LOCK', attr:'大地', ability:'锁住房屋，使普通钥匙无效', episode:'第1集', img:'https://static.wikia.nocookie.net/ccs/images/d/d8/ClowLock.jpg/revision/latest?cb=20220525094409' },
+  { name:'环', nameJp:'輪', en:'LOOP', attr:'大地', ability:'连接次元并创造无限循环', episode:'第22集', img:'https://static.wikia.nocookie.net/ccs/images/1/1c/ClowLoop.jpg/revision/latest?cb=20220525094724' },
+  { name:'迷', nameJp:'迷', en:'MAZE', attr:'大地', ability:'产生巨大迷宫状空间', episode:'第12集', img:'https://static.wikia.nocookie.net/ccs/images/e/e9/ClowMaze.jpg/revision/latest?cb=20220525094816' },
+  { name:'移', nameJp:'移', en:'MOVE', attr:'风', ability:'让物件短距离瞬间移动', episode:'第17集', img:'https://static.wikia.nocookie.net/ccs/images/0/00/ClowMove.jpg/revision/latest?cb=20220525094856' },
+  { name:'驱', nameJp:'駆', en:'DASH', attr:'风', ability:'让跑步速度极快（短距离）', episode:'第23集', img:'https://static.wikia.nocookie.net/ccs/images/2/2c/ClowDash.jpg/revision/latest?cb=20220525093705' },
+  { name:'替', nameJp:'替', en:'CHANGE', attr:'风', ability:'让同时触碰的两个人灵魂交换', episode:'第32集', img:'https://static.wikia.nocookie.net/ccs/images/d/de/ClowChange.jpg/revision/latest?cb=20220525093516' },
+  { name:'睡', nameJp:'眠', en:'SLEEP', attr:'月亮', ability:'让接触者一瞬间睡着', episode:'第22集', img:'https://static.wikia.nocookie.net/ccs/images/e/e8/ClowSleep.jpg/revision/latest?cb=20220525095127' },
+  { name:'梦', nameJp:'夢', en:'DREAM', attr:'月亮', ability:'让对象做预知梦', episode:'第16集', img:'https://static.wikia.nocookie.net/ccs/images/8/88/ClowDream.jpg/revision/latest?cb=20220525093719' },
+  { name:'声', nameJp:'声', en:'VOICE', attr:'太阳', ability:'夺走或赋予声音', episode:'第37集', img:'https://static.wikia.nocookie.net/ccs/images/d/d7/ClowVoice.jpg/revision/latest?cb=20220525095344' },
+  { name:'歌', nameJp:'歌', en:'SONG', attr:'太阳', ability:'复制美妙的歌声', episode:'第23集', img:'https://static.wikia.nocookie.net/ccs/images/4/46/ClowSong.jpg/revision/latest?cb=20220525095150' },
+  { name:'创', nameJp:'創', en:'CREATE', attr:'太阳', ability:'将书写的内容实质化', episode:'第30集', img:'https://static.wikia.nocookie.net/ccs/images/9/9c/ClowCreate.jpg/revision/latest?cb=20220525093608' },
+  { name:'双', nameJp:'双', en:'TWIN', attr:'太阳', ability:'让单一的人或物变成两个', episode:'第34集', img:'https://static.wikia.nocookie.net/ccs/images/5/5a/ClowTwin.jpg/revision/latest?cb=20220525095351' },
+  { name:'戻', nameJp:'戻', en:'RETURN', attr:'月亮', ability:'让使用者回到过去', episode:'第19集', img:'https://static.wikia.nocookie.net/ccs/images/2/22/ClowReturn.jpg/revision/latest?cb=20220525094924' },
+  { name:'镜', nameJp:'鏡', en:'MIRROR', attr:'水', ability:'映出照映物的分身，可反射攻击', episode:'第25集', img:'https://static.wikia.nocookie.net/ccs/images/e/ec/ClowMirror.jpg/revision/latest?cb=20220525094844' },
+  { name:'矢', nameJp:'矢', en:'ARROW', attr:'月亮', ability:'发射大量弓箭', episode:'剧场版1', img:'https://static.wikia.nocookie.net/ccs/images/8/80/ClowArrow.jpg/revision/latest?cb=20220525093411' },
+  { name:'泡', nameJp:'泡', en:'BUBBLES', attr:'水', ability:'产生泡沫进行洗涤', episode:'第9集', img:'https://static.wikia.nocookie.net/ccs/images/8/8d/ClowBubbles.jpg/revision/latest?cb=20220525093505' },
+  { name:'波', nameJp:'波', en:'WAVE', attr:'水', ability:'引起波浪', episode:'第9集', img:'https://static.wikia.nocookie.net/ccs/images/1/17/ClowWave.jpg/revision/latest?cb=20220525095330' }
+];
+
+// ========== 渲染逻辑 ==========
+
+function renderSidebar() {
+  const list = document.getElementById('animeList');
+  list.innerHTML = animeDatabase.map(anime => `
+    <div class="anime-item" data-id="${anime.id}" onclick="selectAnime('${anime.id}')">
+      <div class="anime-icon" style="background:${anime.bannerGradient};">
+        ${anime.posterImage ? `<img src="${anime.posterImage}" alt="${anime.name}">` : `<span style="font-size:24px;">${anime.icon}</span>`}
+      </div>
+      <div class="anime-info">
+        <div class="anime-name">${anime.name}</div>
+        <div class="anime-meta">${anime.episodes} · ${anime.year}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goHome() {
+  document.getElementById('welcomePage').style.display = 'flex';
+  document.getElementById('animeDetailContainer').innerHTML = '';
+  document.querySelectorAll('.anime-item').forEach(el => el.classList.remove('active'));
+}
+
+function filterAnime() {
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  document.querySelectorAll('.anime-item').forEach(item => {
+    const name = item.querySelector('.anime-name').textContent.toLowerCase();
+    if (!keyword || name.includes(keyword)) {
+      item.classList.remove('anime-hidden');
+    } else {
+      item.classList.add('anime-hidden');
+    }
+  });
+}
+
+function selectAnime(id) {
+  document.getElementById('welcomePage').style.display = 'none';
+  document.querySelectorAll('.anime-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-id="${id}"]`).classList.add('active');
+  const anime = animeDatabase.find(a => a.id === id);
+  renderAnimeDetail(anime);
+}
+
+function renderAnimeDetail(anime) {
+  const container = document.getElementById('animeDetailContainer');
+  const roleClassMap = { protagonist:'protagonist', supporting:'supporting', antagonist:'antagonist' };
+
+  container.innerHTML = `
+    <div class="anime-detail active">
+      <div class="anime-banner">
+        ${anime.bannerImage
+          ? `<img class="banner-bg" src="${anime.bannerImage}" alt="${anime.name}" onerror="this.nextElementSibling.style.display='block';this.style.display='none';">
+             <div style="width:100%;height:100%;background:${anime.bannerGradient};display:none;"></div>`
+          : `<div style="width:100%;height:100%;background:${anime.bannerGradient};"></div>`
+        }
+        <div class="banner-overlay">
+          <div class="banner-content">
+            <div class="banner-poster" style="${anime.posterImage ? '' : 'background:'+anime.posterColor+';display:flex;align-items:center;justify-content:center;'}">
+              ${anime.posterImage
+                ? `<img src="${anime.posterImage}" alt="${anime.name}" style="width:100%;height:100%;object-fit:cover;">`
+                : `<span style="font-size:72px;">${anime.icon}</span>`
+              }
+            </div>
+            <div class="banner-info">
+              <h1>${anime.name}</h1>
+              <div class="jp-name">${anime.nameJp}</div>
+              <div class="banner-tags">${anime.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+              <div class="banner-stats">
+                <span><span class="stat-icon">🎬</span>${anime.studio}</span>
+                <span><span class="stat-icon">📺</span>${anime.episodes}</span>
+                <span><span class="stat-icon">📅</span>${anime.year}</span>
+                <span><span class="stat-icon">⭐</span>${anime.rating}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-synopsis">
+        <h3>作品简介</h3>
+        <p>${anime.synopsis}</p>
+      </div>
+
+      ${anime.seasons ? `
+      <div class="seasons-section">
+        <h3>播出信息</h3>
+        <div class="season-list">
+          ${anime.seasons.map((s, i) => `
+            <div class="season-card">
+              <span class="season-badge">${s.title}</span>
+              <div class="season-info">
+                <div class="season-title">${s.subtitle}</div>
+                <div class="season-meta">
+                  <span>📺 ${s.episodes}</span>
+                  <span>📅 ${s.year}</span>
+                  <span>🎬 ${s.studio}</span>
+                </div>
+                ${s.link ? `<a href="${s.link}" target="_blank" rel="noopener noreferrer" class="season-link" onclick="event.stopPropagation();">▶ 在线观看${s.linkLabel ? ' · ' + s.linkLabel : ''}</a>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="characters-section" id="charactersSection">
+        <div class="section-header">
+          <h3>人物图鉴</h3>
+          <span class="char-count">共 ${anime.characters.length} 位角色</span>
+        </div>
+        ${anime.id === 'ccs' ? '<button class="clow-cards-btn" onclick="showClowCards()">🎴 进入库洛牌收藏</button>' : ''}
+        <div class="char-grid">
+          ${anime.characters.map((char, i) => `
+            <div class="char-card" onclick="openCharacter('${anime.id}', ${i})">
+              <div class="card-image" style="${char.image ? '' : 'background:'+char.gradient+';'}">
+                ${char.image ? `<img src="${char.image}" alt="${char.name}">` : `<div class="card-placeholder">${char.emoji}</div>`}
+                <span class="role-badge ${roleClassMap[char.role]}">${char.roleLabel}</span>
+              </div>
+              <div class="card-body">
+                <div class="char-name">${char.name}</div>
+                <div class="char-name-jp">${char.nameJp}</div>
+                <div class="char-cv">CV: <strong>${char.cv}</strong></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div id="clowCardsPage" style="display:none;"></div>
+    </div>
+  `;
+  document.querySelector('.content-area').scrollTop = 0;
+}
+
+function openCharacter(animeId, charIndex) {
+  const anime = animeDatabase.find(a => a.id === animeId);
+  const char = anime.characters[charIndex];
+  document.getElementById('modalTitle').textContent = char.name + ' · 人物档案';
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="profile-layout">
+      <div class="profile-image-box">
+        ${char.image
+          ? `<img src="${char.image}" alt="${char.name}">`
+          : `<div class="placeholder-img" style="background:${char.gradient};">${char.emoji}</div>`
+        }
+      </div>
+      <div class="profile-main">
+        <div class="profile-name-block">
+          <div class="p-name">${char.name}</div>
+          <div class="p-name-jp">${char.nameJp}</div>
+          <div class="p-cv">CV: <strong>${char.cv}</strong></div>
+        </div>
+        <div class="attr-grid">
+          <div class="attr-item"><div class="attr-label">年龄</div><div class="attr-value">${char.age}</div></div>
+          <div class="attr-item"><div class="attr-label">身高</div><div class="attr-value">${char.height}</div></div>
+          <div class="attr-item"><div class="attr-label">体重</div><div class="attr-value">${char.weight}</div></div>
+          <div class="attr-item"><div class="attr-label">所属</div><div class="attr-value">${char.affiliation}</div></div>
+          <div class="attr-item"><div class="attr-label">生日</div><div class="attr-value">${char.birthday}</div></div>
+          <div class="attr-item"><div class="attr-label">血型</div><div class="attr-value">${char.bloodType}</div></div>
+          <div class="attr-item"><div class="attr-label">身份</div><div class="attr-value">${char.status}</div></div>
+          ${char.titanForms && char.titanForms.length ? `<div class="attr-item"><div class="attr-label">特殊形态</div><div class="attr-value">${char.titanForms.join(' / ')}</div></div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="quote-block">${char.quote}</div>
+    <div class="info-section">
+      <h4><span class="icon">📊</span> 能力数值</h4>
+      <div class="ability-bars">
+        ${char.abilities.map(a => `
+          <div class="ability-bar">
+            <span class="bar-label">${a.name}</span>
+            <div class="bar-track"><div class="bar-fill" data-width="${a.value}" style="background:${a.color};"></div></div>
+            <span class="bar-value">${a.value}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">🧠</span> 性格特点</h4>
+      <p>${char.personality}</p>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">📜</span> 背景故事</h4>
+      <p>${char.background}</p>
+    </div>
+    ${char.gallery && char.gallery.length ? `
+    <div class="info-section">
+      <h4><span class="icon">🖼️</span> 人物图鉴</h4>
+      <div class="gallery-grid">${char.gallery.map(img => `<img src="${img}" alt="${char.name}">`).join('')}</div>
+    </div>` : `
+    <div class="info-section">
+      <h4><span class="icon">🖼️</span> 人物图鉴</h4>
+      <p style="color:var(--text-muted);font-style:italic;">图片收录中，敬请期待...</p>
+    </div>`}
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(bar => { bar.style.width = bar.dataset.width + '%'; });
+  }, 100);
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+// ========== 库洛牌页面 ==========
+let currentFilter = '全部';
+
+function showClowCards() {
+  document.getElementById('charactersSection').style.display = 'none';
+  const page = document.getElementById('clowCardsPage');
+  page.style.display = 'block';
+
+  const attrs = ['全部','太阳','月亮','风','水','大地'];
+  page.innerHTML = `
+    <div class="clow-cards-page">
+      <button class="back-btn" onclick="hideClowCards()">← 返回人物列表</button>
+      <h3>🎴 库洛牌收藏</h3>
+      <p class="subtitle">由库洛·里多创造的53张魔法卡牌，每张拥有独特意识与能力。共收录 ${clowCards.length} 张</p>
+      <div class="clow-filter" id="clowFilter">
+        ${attrs.map(a => `<button class="filter-btn ${a==='全部'?'active':''}" onclick="filterClowCards('${a}')">${a}属性</button>`).join('')}
+      </div>
+      <div class="clow-grid" id="clowGrid"></div>
+    </div>
+  `;
+  renderClowGrid(currentFilter);
+}
+
+function hideClowCards() {
+  document.getElementById('clowCardsPage').style.display = 'none';
+  document.getElementById('charactersSection').style.display = 'block';
+  currentFilter = '全部';
+}
+
+function filterClowCards(attr) {
+  currentFilter = attr;
+  document.querySelectorAll('.clow-filter .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderClowGrid(attr);
+}
+
+function renderClowGrid(filter) {
+  const grid = document.getElementById('clowGrid');
+  const filtered = filter === '全部' ? clowCards : clowCards.filter(c => c.attr === filter);
+  grid.innerHTML = filtered.map(c => {
+    const attrClass = (c.attr === '太阳' || c.attr === '大地') ? 'sun' : 'moon';
+    return `
+    <div class="clow-card-item" onclick="showCardDetail('${c.en}')">
+      <div class="card-img" style="background:linear-gradient(135deg,#2a1a3a,#5a3a6a);">
+        ${c.img ? `<img src="${c.img}" alt="${c.name}" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=\\'card-placeholder\\'>🎴</div>'">` : '<div class="card-placeholder">🎴</div>'}
+        <span class="attr-tag ${attrClass}">${c.attr}</span>
+      </div>
+      <div class="card-footer">
+        <div class="cn-name">${c.name}牌</div>
+        <div class="en-name">THE ${c.en}</div>
+        <div class="ep-tag">📺 ${c.episode}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showCardDetail(en) {
+  const card = clowCards.find(c => c.en === en);
+  if (!card) return;
+  const anime = animeDatabase.find(a => a.id === 'ccs');
+  document.getElementById('modalTitle').textContent = card.name + '牌 · 库洛牌详情';
+  const body = document.getElementById('modalBody');
+  const attrClass = (card.attr === '太阳' || card.attr === '大地') ? 'sun' : 'moon';
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;width:200px;height:280px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.5);background:linear-gradient(135deg,#2a1a3a,#5a3a6a);">
+        ${card.img ? `<img src="${card.img}" alt="${card.name}牌" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:96px;\\'>🎴</div>'">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:96px;">🎴</div>'}
+      </div>
+    </div>
+    <div class="profile-name-block" style="text-align:center;">
+      <div class="p-name">${card.name}牌</div>
+      <div class="p-name-jp">「${card.nameJp}」 THE ${card.en}</div>
+    </div>
+    <div class="attr-grid" style="margin-bottom:20px;">
+      <div class="attr-item"><div class="attr-label">属性</div><div class="attr-value">${card.attr}</div></div>
+      <div class="attr-item"><div class="attr-label">登场集数</div><div class="attr-value">${card.episode}</div></div>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">✨</span> 能力描述</h4>
+      <p style="line-height:2;">${card.ability}</p>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+renderSidebar();
+</script>
+</body>
+</html>
