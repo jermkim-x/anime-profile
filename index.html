@@ -230,6 +230,51 @@
     border:1px solid var(--border); cursor:pointer; transition:all 0.2s; margin-bottom:20px; }
   .back-btn:hover { background:var(--bg-card-hover); color:var(--text-primary); }
 
+  /* 噬极兽图鉴页面 */
+  .phage-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 30px;
+    background: linear-gradient(135deg, #0a3a3a, #1a6a6a); color: #00e5ff; font-size: 14px; font-weight: 700;
+    cursor: pointer; border: 1px solid rgba(0,229,255,0.3); transition: all 0.3s; margin-top: 16px;
+    text-shadow: 0 0 8px rgba(0,229,255,0.5);
+  }
+  .phage-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,229,255,0.3); border-color: rgba(0,229,255,0.6); }
+  .phage-page { padding: 32px 40px; }
+  .phage-page h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .phage-page h3::before { content: ''; width: 4px; height: 24px; background: linear-gradient(135deg, #00e5ff, #00bcd4); border-radius: 2px; }
+  .phage-page .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .phage-filter { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .phage-filter .filter-btn { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s; }
+  .phage-filter .filter-btn.active, .phage-filter .filter-btn:hover {
+    background: rgba(0,229,255,0.15); color: #00e5ff; border-color: rgba(0,229,255,0.5); }
+  .phage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; }
+  .phage-card { background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; cursor: pointer;
+    border: 1px solid var(--border); transition: all 0.3s; position: relative; }
+  .phage-card:hover { transform: translateY(-6px); border-color: #00e5ff; box-shadow: 0 8px 32px rgba(0,229,255,0.2); }
+  .phage-card .phage-img { width: 100%; aspect-ratio: 4/3; overflow: hidden; position: relative; background: linear-gradient(135deg,#0a1a2a,#1a3a4a); }
+  .phage-card .phage-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+  .phage-card:hover .phage-img img { transform: scale(1.05); }
+  .phage-card .phage-img .phage-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:36px; }
+  .phage-card .phage-img .level-tag { position: absolute; top:6px; left:6px; padding:2px 8px; border-radius:12px;
+    font-size:10px; font-weight:700; backdrop-filter:blur(8px); background:rgba(0,229,255,0.75); color:#000; }
+  .phage-card .phage-img .level-tag.high { background:rgba(255,50,50,0.8); color:#fff; }
+  .phage-card .phage-img .level-tag.mid { background:rgba(255,170,0,0.8); color:#000; }
+  .phage-card .phage-img .level-tag.special { background:rgba(180,0,255,0.8); color:#fff; }
+  .phage-card .phage-footer { padding: 10px 12px; }
+  .phage-card .phage-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .phage-card .phage-en { font-size: 11px; color: var(--text-muted); }
+  .phage-card .phage-sub { font-size: 10px; color: #00e5ff; margin-top: 4px; }
+  .phage-detail-abilities { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
+  .phage-detail-abilities .ability-item { padding: 8px 12px; background: rgba(0,229,255,0.08); border-radius: 8px; border: 1px solid rgba(0,229,255,0.15); font-size: 13px; line-height: 1.5; }
+  .phage-eco-box { margin-top: 24px; padding: 20px; border-radius: 12px; background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,188,212,0.06)); border: 1px solid rgba(0,229,255,0.15); }
+  .phage-eco-box h4 { font-size: 16px; font-weight: 700; color: #00e5ff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .phage-eco-box h4::before { content: ''; width: 3px; height: 18px; background: #00e5ff; border-radius: 2px; }
+  .phage-eco-item { padding: 8px 0; border-bottom: 1px solid rgba(0,229,255,0.1); }
+  .phage-eco-item:last-child { border-bottom: none; }
+  .phage-eco-item .eco-label { font-weight: 700; color: #00e5ff; font-size: 13px; }
+  .phage-eco-item .eco-desc { color: var(--text-secondary); font-size: 12px; margin-top: 4px; line-height: 1.6; }
+
   @media (max-width: 768px) {
     .sidebar { width:60px; min-width:60px; }
     .sidebar-title, .anime-item .anime-info, .home-btn span:last-child, .sidebar-divider { display:none; }
@@ -2494,6 +2539,130 @@ const clowCards = [
   { name:'波', nameJp:'波', en:'WAVE', attr:'水', ability:'引起波浪', episode:'第9集', img:'https://static.wikia.nocookie.net/ccs/images/1/17/ClowWave.jpg/revision/latest?cb=20220525095330' }
 ];
 
+// ========== 噬极兽数据 ==========
+const phageBeasts = [
+  {
+    name:'蛇狗', en:'Snake Dog', level:'泛生级', subType:'泛生型I型（近战型）',
+    img:'http://i1.hdslb.com/bfs/archive/f1766cdf8d3a3c369c1797ea2bee2095cfc5bf3b.jpg',
+    appearance:'蛇头狗身，6条腿，四肢似人手。颈部可伸缩，收缩时有"包皮"保护，伸出后增加攻击距离。耳边有条状进食器官（触须），尾部粗壮，复眼猩红色。',
+    abilities:['群起围攻、车轮战等战术配合','颈部弹出重创目标','触手摄取生命源质','触须发光互通情报或召唤同伴'],
+    weakness:'击断触须可短暂延缓行动；电磁炮等强火力可造成有效伤害',
+    episode:'第一季起持续登场，贯穿全剧',
+    bio:'猎荒者最常遭遇的噬极兽。其四肢似人手，暗示噬极兽与人类进化的关联。受伤后一定时间内愈合伤口并恢复意志。',
+    danger:3
+  },
+  {
+    name:'地吼', en:'Ground Howler', level:'泛生级', subType:'泛生型II型（远程攻击型）',
+    img:'https://i0.hdslb.com/bfs/article/34168b6faf75aec9a205cea610e705676bc8c256.jpg',
+    appearance:'整体类似爬行动物，6条腿。灵长类头颅，头上长有多对牛角状尖角，身体呈暗红色，下巴处有明显声囊结构。',
+    abilities:['声囊迸发能量脉冲（远程主力攻击）','声囊鼓胀亮红光时蓄力，蓄力后发射红色能量波','具备一定智慧，懂得伏击','优先攻击空中支援部队'],
+    weakness:'攻击膨胀发光的声囊可中断蓄力并暂缓行动',
+    episode:'第一季起登场',
+    bio:'让猎荒者失去空中优势的关键威胁。生物原型为牛与青蛙的融合体。',
+    danger:3
+  },
+  {
+    name:'刺鳗', en:'Spiny Eel', level:'泛生级', subType:'泛生型II型（远程攻击型）',
+    img:'https://pics2.baidu.com/feed/7c1ed21b0ef41bd521fe6e48dcae88db38db3d65.jpeg@f_auto?token=9106a5f5135f6eed823036699c3a331c',
+    appearance:'体型较小，似"长了胡须的壁虎"。动作灵敏，可在建筑墙体上活动，善于隐藏在特殊环境中，可伪装成岩石。',
+    abilities:['从口中射出击穿重力体的尖刺','尖刺如同接收器，尾部触须吸收生命源质','防御力可抵挡一般枪击','超强生命回复能力','可与花萼兽合唱影响周围生物听觉和意识'],
+    weakness:'击杀背部的灵息籽才能彻底消灭',
+    episode:'第一季后期起登场',
+    bio:'刺鳗的出现通常意味着附近有大型噬极兽（花萼兽），二者配合对人类威胁极大。生物原型为鳗鱼与蝎子的融合体。',
+    danger:4
+  },
+  {
+    name:'地螈兽', en:'Earth Salamander', level:'泛生级', subType:'防御特化型',
+    img:'https://pics1.baidu.com/feed/5fdf8db1cb134954238b5cc86a032b50d0094a5e.jpeg@f_auto?token=6603169639fa60cc181066ce0325b8be',
+    appearance:'形似蛤蟆与螈的混合体，体型如小山般庞大，体表覆盖角质甲壳。',
+    abilities:['防御极高，体表角质甲壳坚不可摧','以庞大身躯挤压封锁活动空间','近战冲撞碾压'],
+    weakness:'口器为唯一弱点',
+    episode:'第一季登场',
+    bio:'不可力敌的防御特化型，通常与蛇狗配合封堵路线。生物原型为癞蛤蟆与蝾螈的融合体。',
+    danger:3
+  },
+  {
+    name:'花萼兽', en:'Calyx Beast', level:'蜕变级', subType:'蜕变型（中阶噬极兽）',
+    img:'http://i1.hdslb.com/bfs/archive/c1cd387925c59dca0e50f4c90a4e62d05d56b684.jpg',
+    appearance:'体型庞大（体长6-18米，重量15吨以上），头颅巨大，全身骨甲异常坚硬。拥有溴雾护甲，善于伪装。',
+    abilities:['物理碾压一切障碍','嘴部放射蓝色能量光波（可瓦解重力体护甲）','声波精神攻击（大范围控场）','吸取生命源质','释放猩红素孢子云（范围1公里）致幻并唤醒恐惧记忆','根系连接息壤网络，召唤500米内所有低级个体','传递能量复活刺鳗','吞入猎物体内抽取源质后排出肉土'],
+    weakness:'需击碎灵息籽才能彻底击杀',
+    episode:'第一季重磅登场，贯穿第二季',
+    bio:'生态战术枢纽，负责范围控制与群体调度。曾引发龙骨村"虫潮围攻"。会双手叉腰嘲讽人类，拥有超乎寻常的战斗智慧。无明确地球生物原型，属植物型噬极兽。',
+    danger:8
+  },
+  {
+    name:'双鄂兽', en:'Double Jaw Beast', level:'统御级', subType:'蜕变型（中高阶噬极兽）',
+    img:'http://i0.hdslb.com/bfs/archive/f080f22cec805fe75e51029f88c2bf04fcaa9318.jpg',
+    appearance:'体型如山却相当灵活，长着一张呆呆的人类面孔（面具般），真正嘴巴隐藏。背上有鳍可发出沟通信号，发光触须既是进食也是交流器官。亚种巨齿双鄂兽体型更大。',
+    abilities:['咬合力惊人，撕碎一切','释放声波冲击震晕对手','指挥其他噬极兽协同作战','背部鳍发信号召唤更多同伴','可将捕食的人类在体内转化为泛生型噬极兽','濒死时爆发强大力量'],
+    weakness:'发光触须是弱点；破掉表皮攻击灵息籽可击败',
+    episode:'第一季重要Boss；第二季第十集巨齿双鄂兽再度登场',
+    bio:'马克曾与其战斗并击败。第二季第十集中，巨齿双鄂兽被临渊者战甲（白月魁驾驶）10秒内速杀。',
+    danger:7
+  },
+  {
+    name:'负子兽', en:'Carrier Beast', level:'泛生级', subType:'泛生型III型（拟态型）',
+    img:'http://i1.hdslb.com/bfs/archive/01fb187caab639f8feaeff85d0dd60aa2da979f5.jpg',
+    appearance:'能完美模仿人类外形与行为，皮肤防弹。背上布满含强腐蚀性黏液的育腔装载子兽，尾部形似人手（拟态进化结果），进食器官位于尾部诱饵。',
+    abilities:['拟态——模仿人类外形与求救行为设置致命诱饵','子兽离开育腔猎捕并回收生命源质','皮肤防弹','背部育腔发射子兽进攻'],
+    weakness:'尾部（进食器官所在）',
+    episode:'第二季第三集起登场',
+    bio:'第二季重磅新噬极兽。尾部最初非人手形，观察到人类求救时伸手的特征后长期拟态演化形成——暗示噬极兽体系正在进行智慧化衍变。',
+    danger:6
+  },
+  {
+    name:'覆频', en:'Frequency Overrider', level:'新种系', subType:'变异泛生型（经蜕变进程）',
+    img:'',
+    appearance:'头部如雄鸡，喉部有类似触手结构，能带领兽群攻击。',
+    abilities:['双频电磁攻击：高频约300GHz穿透灵隐弹，低频约2.5GHz扰动生态带电粒子','破坏灵隐弹，击溃源质连接','"死而复生"能力','普通灵态诱导效果不佳'],
+    weakness:'喉部触手结构被攻击后出现明显防御性收缩反射，可能是进食器官及弱点（尚待确认）',
+    episode:'第二季第三集',
+    bio:'玛娜生态网络共享战斗信息后促使噬极兽朝克制源质潜能方向进化的铁证。其DNA干细胞存在去甲基化修饰痕迹，由腥漩环境中特定诱导因子触发。基于独特的频率干扰能力命名。',
+    danger:7
+  },
+  {
+    name:'血眼', en:'Blood Eye', level:'寄生级', subType:'寄生操控型',
+    img:'',
+    appearance:'形态未知，擅长隐匿于暗处窥伺，可寄生操控人类。',
+    abilities:['寄生操控人类宿主','在暗处窥伺等待时机','突破人类心理防线'],
+    weakness:'资料不足，待后续剧情揭示',
+    episode:'剧情中提及，正式登场细节有限',
+    bio:'寄生级噬极兽的代表，详细信息尚不充分，期待后续剧情展开。',
+    danger:5
+  },
+  {
+    name:'脊蛊', en:'Spinal Parasite', level:'寄生级', subType:'辅助/寄生单元',
+    img:'',
+    appearance:'人类脊椎变异而成的寄生生物，外形似巨型蜈蚣。头部保留人类面部特征，全身坚硬鳞片。',
+    abilities:['释放腥荭素干扰宿主神经系统','控制人类宿主行为','寄生导致宿主脊柱荧光化成为玛娜生态能量节点','无痛觉'],
+    weakness:'切断坚硬外壳下主神经',
+    episode:'第一季起登场',
+    bio:'颅生意外死亡后脊蛊被批量生产用于实验。马克即因脊蛊附身而兽化为嵌合体，是灵笼世界观的关键设定之一。',
+    danger:5
+  },
+  {
+    name:'君王级噬极兽', en:'King-level Phage', level:'君王级', subType:'生态顶点控制者',
+    img:'https://pics2.baidu.com/feed/d833c895d143ad4bf0e3dda02f442abfa50f0653.jpeg@f_auto?token=65bd4f433df06752fc3a4586533d49df',
+    appearance:'仅在官方手游PV中露面：六条手臂，通体散发蓝色生命源质光芒的人形生物，悬浮空中，臀后似有触手或蝶翼。以倒塌楼房为参照身高可达数十层楼，缩小形态约10米。',
+    abilities:['高等智慧——统筹全局指挥百万噬极兽','生命源质操控——全身散发蓝光可无限再生','形态可变——数十层楼巨像与10米人形切换','可能的空间影响/反重力能力','精神压制——类似群体催眠'],
+    weakness:'尚未正式登场，弱点未知',
+    episode:'仅手游PV露面，正片尚未正式登场',
+    bio:'第二季第10集兽山遭导弹轰击仅下沉20米转瞬回升，暗示地下有更高层级生命体。第二季第12集解析指出噬极兽等级还包含"化身级"——化身级噬极兽具备自我意识，可脱离玛娜生态独立行动，光影之主很可能就是化身级。',
+    danger:10
+  },
+  {
+    name:'颅生', en:'Cranial Spawn', level:'特殊', subType:'玛娜初体孕育的人形生命',
+    img:'',
+    appearance:'四条胳膊、头长角的人形噬极兽，马克是其克隆体。',
+    abilities:['与玛娜初体拥有独特的三链DNA','脊蛊是马克兽化的关键','曾给龙骨村造成极大灾难'],
+    weakness:'未知',
+    episode:'剧情背景提及',
+    bio:'白月魁做过无数颅生克隆体实验。颅生属于角色范畴而非典型噬极兽，但与玛娜生态深度关联，是理解灵笼世界观的关键。',
+    danger:9
+  }
+];
+
 // ========== 渲染逻辑 ==========
 
 function renderSidebar() {
@@ -2604,6 +2773,7 @@ function renderAnimeDetail(anime) {
           <span class="char-count">共 ${anime.characters.length} 位角色</span>
         </div>
         ${anime.id === 'ccs' ? '<button class="clow-cards-btn" onclick="showClowCards()">🎴 进入库洛牌收藏</button>' : ''}
+        ${anime.id === 'lingcage' ? '<button class="phage-btn" onclick="showPhageBeasts()">进 入 噬 极 兽 图 鉴</button>' : ''}
         <div class="char-grid">
           ${anime.characters.map((char, i) => `
             <div class="char-card" onclick="openCharacter('${anime.id}', ${i})">
@@ -2621,6 +2791,7 @@ function renderAnimeDetail(anime) {
         </div>
       </div>
       <div id="clowCardsPage" style="display:none;"></div>
+      <div id="phagePage" style="display:none;"></div>
     </div>
   `;
   document.querySelector('.content-area').scrollTop = 0;
@@ -2778,6 +2949,130 @@ function showCardDetail(en) {
     <div class="info-section">
       <h4><span class="icon">✨</span> 能力描述</h4>
       <p style="line-height:2;">${card.ability}</p>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+// ========== 噬极兽图鉴页面 ==========
+let phageFilter = '全部';
+
+function showPhageBeasts() {
+  document.getElementById('charactersSection').style.display = 'none';
+  const page = document.getElementById('phagePage');
+  page.style.display = 'block';
+
+  const levels = ['全部','泛生级','寄生级','蜕变级','统御级','君王级','新种系','特殊'];
+  page.innerHTML = `
+    <div class="phage-page">
+      <button class="back-btn" onclick="hidePhageBeasts()">← 返回人物列表</button>
+      <h3>噬极兽图鉴</h3>
+      <p class="subtitle">灵笼世界的恐怖生物，由玛娜生态孕育而成。等级越高形态越拟人，共收录 ${phageBeasts.length} 种</p>
+      <div class="phage-filter" id="phageFilterBar">
+        ${levels.map(l => `<button class="filter-btn ${l==='全部'?'active':''}" onclick="filterPhageBeasts('${l}')">${l}</button>`).join('')}
+      </div>
+      <div class="phage-grid" id="phageGrid"></div>
+      <div class="phage-eco-box">
+        <h4>玛娜生态体系</h4>
+        <div class="phage-eco-item">
+          <div class="eco-label">玛娜之花</div>
+          <div class="eco-desc">生态中枢，生物性植物。释放极强生物磁场覆盖数十公里，吸收生命源质，释放腥荭素致幻，孕育催生噬极兽并促其进化。噬极兽收集源质返还，玛娜之花修复重伤个体。</div>
+        </div>
+        <div class="phage-eco-item">
+          <div class="eco-label">息壤</div>
+          <div class="eco-desc">玛娜之花分泌的胶状物质，平时固态，遇血红蛋白激活为流动"活体泥潭"。可缠绕杀死靠近的生物，储存生命源质。</div>
+        </div>
+        <div class="phage-eco-item">
+          <div class="eco-label">腥荭素</div>
+          <div class="eco-desc">红色雾气，含神经毒素+孢子。攻击神经系统致幻觉，长期导致死亡或变异。大量汇聚形成"腥漩"——紫色漩涡状能量场，为玛娜生态进化征兆。</div>
+        </div>
+        <div class="phage-eco-item">
+          <div class="eco-label">灵息籽</div>
+          <div class="eco-desc">噬极兽核心器官，储存生命源质。蜕变型及以上的噬极兽需击碎灵息籽才能彻底击杀，否则会不断再生。</div>
+        </div>
+        <div class="phage-eco-item">
+          <div class="eco-label">进化规律</div>
+          <div class="eco-desc">等级越高越拟人：泛生级→野兽形态；蜕变级→部分人形特征；统御级→人脸面具；君王级→完整人形；化身级→可能与人类无异。战斗数据驱动进化（覆频铁证），腥漩催化蜕变进程。</div>
+        </div>
+      </div>
+    </div>
+  `;
+  renderPhageGrid('全部');
+}
+
+function hidePhageBeasts() {
+  document.getElementById('phagePage').style.display = 'none';
+  document.getElementById('charactersSection').style.display = 'block';
+  phageFilter = '全部';
+}
+
+function filterPhageBeasts(level) {
+  phageFilter = level;
+  document.querySelectorAll('#phageFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderPhageGrid(level);
+}
+
+function renderPhageGrid(filter) {
+  const grid = document.getElementById('phageGrid');
+  const filtered = filter === '全部' ? phageBeasts : phageBeasts.filter(b => b.level === filter);
+  grid.innerHTML = filtered.map((b, i) => {
+    const levelClass = ['君王级','特殊'].includes(b.level) ? 'high' : ['蜕变级','统御级','新种系'].includes(b.level) ? 'mid' : '';
+    return `
+    <div class="phage-card" onclick="showPhageDetail(${phageBeasts.indexOf(b)})">
+      <div class="phage-img" style="background:linear-gradient(135deg,#0a1a2a,#1a3a4a);">
+        ${b.img ? `<img src="${b.img}" alt="${b.name}" onerror="this.parentElement.innerHTML='<div class=\\'phage-placeholder\\'>👹</div>'">` : '<div class="phage-placeholder">👹</div>'}
+        <span class="level-tag ${levelClass}">${b.level}</span>
+      </div>
+      <div class="phage-footer">
+        <div class="phage-name">${b.name}</div>
+        <div class="phage-en">${b.en}</div>
+        <div class="phage-sub">${b.subType}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPhageDetail(idx) {
+  const b = phageBeasts[idx];
+  if (!b) return;
+  const levelClass = ['君王级','特殊'].includes(b.level) ? 'high' : ['蜕变级','统御级','新种系'].includes(b.level) ? 'mid' : '';
+  const dangerBars = '█'.repeat(b.danger) + '░'.repeat(10 - b.danger);
+  const body = document.getElementById('modalBody');
+  document.getElementById('modalTitle').textContent = b.name + ' · 噬极兽图鉴';
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;width:260px;height:180px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,229,255,0.2);background:linear-gradient(135deg,#0a1a2a,#1a3a4a);">
+        ${b.img ? `<img src="${b.img}" alt="${b.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:72px;\\'>👹</div>'">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:72px;">👹</div>'}
+      </div>
+    </div>
+    <div class="profile-name-block" style="text-align:center;">
+      <div class="p-name">${b.name}</div>
+      <div class="p-name-jp">${b.en}</div>
+    </div>
+    <div class="attr-grid" style="margin-bottom:20px;">
+      <div class="attr-item"><div class="attr-label">等级</div><div class="attr-value"><span class="level-tag ${levelClass}" style="position:static;display:inline-block;">${b.level}</span></div></div>
+      <div class="attr-item"><div class="attr-label">分类</div><div class="attr-value">${b.subType}</div></div>
+      <div class="attr-item"><div class="attr-label">威胁等级</div><div class="attr-value" style="color:${b.danger>=7?'#ff4444':b.danger>=4?'#ffaa00':'#00e5ff'}; font-family:monospace; letter-spacing:2px;">${dangerBars} ${b.danger}/10</div></div>
+      <div class="attr-item"><div class="attr-label">登场</div><div class="attr-value">${b.episode}</div></div>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">🔬</span> 外形特征</h4>
+      <p style="line-height:2;">${b.appearance}</p>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">⚔️</span> 能力与攻击方式</h4>
+      <div class="phage-detail-abilities">
+        ${b.abilities.map(a => `<div class="ability-item">${a}</div>`).join('')}
+      </div>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">🎯</span> 弱点</h4>
+      <p style="line-height:2;">${b.weakness}</p>
+    </div>
+    <div class="info-section">
+      <h4><span class="icon">📖</span> 背景资料</h4>
+      <p style="line-height:2;">${b.bio}</p>
     </div>
   `;
   document.getElementById('modalOverlay').classList.add('show');
