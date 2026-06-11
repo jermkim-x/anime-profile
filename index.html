@@ -3324,30 +3324,28 @@ function showSmartStage(stage) {
 }
 
 // ---- 关键词库 ----
+// 所有ID均为animeDatabase中的anime id
 const smartKeywordMap = {
-  hair: { '银发':['34879','56059','60851','137755'], '银色头发':['34879','56059','60851','137755'], '金发':['4075','56880','107843','103074'], '金色头发':['4075','56880','107843','103074'], '红发':['44058','56880'], '红头发':['44058','56880'], '黑发':['51279','107843'], '黑色头发':['51279','107843'], '粉发':['56880'], '粉色头发':['56880'], '紫发':['146401'], '紫色头发':['146401'], '蓝发':['60851'], '蓝色头发':['60851'], '白发':['90548'], '白色头发':['90548'], '绿发':['44cc44'], '绿色头发':['44cc44'], '棕发':['103074'], '棕色头发':['103074'] },
-  eyes: { '红眼':['34879','44058','56059','137755'], '红色眼睛':['34879','44058','56059','137755'], '蓝眼':['4075','60851','107843'], '蓝色眼睛':['4075','60851','107843'], '金眼':['90548'], '金色眼睛':['90548'], '绿眼':['44cc44'], '绿色眼睛':['44cc44'] },
-  ability: { '巨人':['aot'], '冰':['51279','34879'], '冰属性':['51279','34879'], '冰冻':['51279','34879'], '火':['44058','56880','44cc44'], '火属性':['44058'], '火焰':['44058'], '雷':['107843','44cc44'], '雷电':['107843'], '雷属性':['107843'], '时间':['90548'], '时间操控':['90548'], '空间':['90548'], '空间能力':['90548'], '念':['hxh'], '念能力':['hxh'], '超能力':['hxh','railgun'], '电磁':['railgun'], '电磁炮':['railgun'], '超电磁炮':['railgun'], '魔法':['ccs'], '魔法少女':['ccs'], '卡牌':['ccs'], '怪盗':['sainttail'], '盗贼':['sainttail'], '蛊术':['buliangren'], '蛊':['buliangren'], '武学':['buliangren'], '武功':['buliangren'], '吸功大法':['buliangren'], '天罡诀':['buliangren'], '壁咚':['buliangren'], '噬极兽':['lingcage'], '寄生':['parasyte'], '寄生兽':['parasyte'], '变身':['aot','yyht'], '异能':['hxh','railgun'] },
-  genre: { '热血':['aot','hxh','op','hitman','yyht'], '治愈':['mermaid'], '搞笑':['nozaki','hitman'], '悬疑':['parasyte','lingcage'], '恐怖':['parasyte','lingcage'], '科幻':['lingcage','railgun'], '末日':['lingcage'], '末日科幻':['lingcage'], '武侠':['buliangren'], '玄幻':['buliangren'], '动作':['aot','hxh','op','hitman','lingcage','yyht'], '恋爱':['ccs','sainttail','nozaki','mermaid'], '校园':['ccs','nozaki','railgun'], '日常':['nozaki','god'], '地狱':['god'], '冥界':['god'], '历史':['qinshm'], '战争':['aot','nntx'], '机甲':['wataru'], '魔法':['ccs'], '海洋':['mermaid','op'], '海盗':['op'], '忍者':['hxh'], '猎人':['hxh'], '杀手':['hitman','parasyte'] },
+  hair: { '银发':['aot','yyht','ccs'], '银色头发':['aot','yyht','ccs'], '金发':['hitman','yyht'], '金色头发':['hitman','yyht'], '红发':['aot','nozaki'], '红头发':['aot','nozaki'], '黑发':['hitman','nozaki','ccs'], '黑色头发':['hitman','nozaki','ccs'], '粉发':['nozaki'], '粉色头发':['nozaki'], '白发':['hitman'], '白色头发':['hitman'], '蓝发':['yyht','railgun'], '蓝色头发':['yyht','railgun'], '绿发':['nozaki'], '绿色头发':['nozaki'], '棕发':['hitman'], '棕色头发':['hitman'] },
+  eyes: { '红眼':['aot','yyht'], '红色眼睛':['aot','yyht'], '蓝眼':['nozaki','ccs'], '蓝色眼睛':['nozaki','ccs'], '金眼':['hitman'], '金色眼睛':['hitman'], '绿眼':['hxh'], '绿色眼睛':['hxh'] },
+  ability: { '巨人':['aot'], '冰':['ccs','yyht'], '冰属性':['ccs','yyht'], '冰冻':['ccs'], '火':['aot','yyht','buliangren'], '火属性':['yyht'], '火焰':['aot','yyht'], '雷':['hitman','yyht'], '雷电':['hitman'], '雷属性':['hitman'], '时间':['hitman'], '时间操控':['hitman'], '空间':['hitman'], '空间能力':['hitman'], '念':['hxh'], '念能力':['hxh'], '超能力':['hxh','railgun'], '电磁':['railgun'], '电磁炮':['railgun'], '超电磁炮':['railgun'], '魔法':['ccs'], '魔法少女':['ccs'], '卡牌':['ccs'], '怪盗':['sainttail'], '蛊术':['buliangren'], '蛊':['buliangren'], '武学':['buliangren'], '武功':['buliangren'], '吸功大法':['buliangren'], '天罡诀':['buliangren'], '噬极兽':['lingcage'], '寄生':['parasyte'], '寄生兽':['parasyte'], '变身':['aot','yyht'], '异能':['hxh','railgun'], '九幽玄天神功':['buliangren'], '至圣乾坤功':['buliangren'], '九幽':['buliangren'] },
+  genre: { '热血':['aot','hxh','op','hitman','yyht'], '治愈':['mermaid'], '搞笑':['nozaki','hitman','god'], '悬疑':['parasyte','lingcage'], '恐怖':['parasyte','lingcage'], '科幻':['lingcage','railgun'], '末日':['lingcage'], '武侠':['buliangren'], '玄幻':['buliangren'], '动作':['aot','hxh','op','hitman','lingcage','yyht','wataru'], '恋爱':['ccs','sainttail','nozaki','mermaid'], '校园':['ccs','nozaki','railgun'], '日常':['nozaki','god'], '地狱':['god'], '冥界':['god'], '历史':['qinshm'], '战争':['aot','nntx'], '机甲':['wataru'], '魔法':['ccs'], '海洋':['mermaid','op'], '海盗':['op'], '忍者':['hxh'], '猎人':['hxh'], '杀手':['hitman','parasyte'], '国漫':['buliangren','lingcage','nntx','qinshm','jiangye'] },
   anime: { '进击':['aot'], '巨人':['aot'], '艾伦':['aot'], '三笠':['aot'], '利威尔':['aot'], '兵长':['aot'], '魔卡':['ccs'], '小樱':['ccs'], '库洛牌':['ccs'], '木之本樱':['ccs'], '怪盗':['sainttail'], '圣少女':['sainttail'], '羽丘':['sainttail'], '人鱼':['mermaid'], '七海':['mermaid'], '露亚':['mermaid'], '月刊':['nozaki'], '佐仓':['nozaki'], '野崎':['nozaki'], '幽游':['yyht'], '浦饭':['yyht'], '藏马':['yyht'], '飞影':['yyht'], '全职':['hxh'], '小杰':['hxh'], '奇犽':['hxh'], '酷拉皮卡':['hxh'], '家庭':['hitman'], '家教':['hitman'], '纲吉':['hitman'], '阿纲':['hitman'], 'Reborn':['hitman'], '不良人':['buliangren'], '李星云':['buliangren'], '袁天罡':['buliangren'], '灵笼':['lingcage'], '马克':['lingcage'], '白月魁':['lingcage'], '噬极兽':['lingcage'], '那兔':['nntx'], '神龙':['wataru'], '战部渡':['wataru'], '海贼':['op'], '路飞':['op'], '索隆':['op'], '将夜':['jiangye'], '秦时':['qinshm'], '鬼灯':['god'], '超电磁炮':['railgun'], '御坂':['railgun'], '炮姐':['railgun'], '寄生兽':['parasyte'], '右太郎':['parasyte'], '小白':['parasyte'] },
-  scene: { '城墙':['aot'], '城墙被打破':['aot'], '巨人入侵':['aot'], '立体机动装置':['aot'], '调查兵团':['aot'], '灯塔':['lingcage'], '高塔':['lingcage'], '末日后':['lingcage'], '世界末日':['lingcage'], '海洋学院':['mermaid'], '海底':['mermaid'], '冥界地狱':['god'], '江户时代':['yyht'], '唐朝':['buliangren'], '江湖':['buliangren'], '武侠世界':['buliangren'], '忍者村':['hxh'], '猎人考试':['hxh'], '彭格列':['hitman'], '黑手党':['hitman'], '伟大航路':['op'], '新世界':['op'], '时空裂缝':['railgun'], '学园都市':['railgun'] },
-  trait: { '傲娇':['ccs','sainttail'], '冷酷':['aot','yyht','god'], '温柔':['ccs','mermaid','nozaki'], '热血':['aot','hxh','wataru','hitman','yyht'], '腹黑':['nozaki','hitman'], '呆萌':['nozaki','mermaid'], '坚强':['aot','sainttail','buliangren'], '神秘':['aot','hxh','lingcage'], '搞笑':['nozaki','hitman','god'], '反派':['aot','hitman','buliangren','lingcage','hxh'] }
+  scene: { '城墙':['aot'], '城墙被打破':['aot'], '巨人入侵':['aot'], '立体机动装置':['aot'], '调查兵团':['aot'], '灯塔':['lingcage'], '高塔':['lingcage'], '末日后':['lingcage'], '世界末日':['lingcage'], '海洋学院':['mermaid'], '海底':['mermaid'], '冥界地狱':['god'], '江户时代':['yyht'], '唐朝':['buliangren'], '江湖':['buliangren'], '武侠世界':['buliangren'], '猎人考试':['hxh'], '彭格列':['hitman'], '黑手党':['hitman'], '伟大航路':['op'], '新世界':['op'], '学园都市':['railgun'] },
+  trait: { '傲娇':['ccs','sainttail'], '冷酷':['aot','yyht','god'], '温柔':['ccs','mermaid','nozaki'], '热血':['aot','hxh','wataru','hitman','yyht'], '腹黑':['nozaki','hitman'], '呆萌':['nozaki','mermaid'], '坚强':['aot','sainttail','buliangren'], '神秘':['aot','hxh','lingcage'], '搞笑':['nozaki','hitman','god'], '反派':['aot','hitman','buliangren','lingcage','hxh'], '冷艳':['yyht','ccs','buliangren'], '腹黑':['nozaki','hitman','god'], '霸气':['aot','buliangren','yyht'], '双重人格':['buliangren'] }
 };
 
 function extractKeywords(query) {
-  const hits = { charIds: new Set(), animeIds: new Set() };
+  const animeIds = new Set();
   const q = query.toLowerCase();
   for (const [category, map] of Object.entries(smartKeywordMap)) {
     for (const [keyword, ids] of Object.entries(map)) {
       if (q.includes(keyword.toLowerCase())) {
-        ids.forEach(id => {
-          if (id.length < 6) hits.animeIds.add(id);
-          else hits.charIds.add(id);
-        });
+        ids.forEach(id => animeIds.add(id));
       }
     }
   }
-  return hits;
+  return animeIds;
 }
 
 function fuzzyMatchCharacter(query) {
@@ -3385,42 +3383,32 @@ function fuzzyMatchCharacter(query) {
 }
 
 function doSmartMatch(query) {
-  const { charIds, animeIds } = extractKeywords(query);
+  const keywordAnimeIds = extractKeywords(query);
   const charResults = fuzzyMatchCharacter(query);
   // combine: keyword-hinted anime + fuzzy char results
   const seen = new Set();
   const combined = [];
-  // first: anime-level keyword hits
-  animeIds.forEach(aid => {
+  // first: anime-level keyword hits (highest priority)
+  keywordAnimeIds.forEach(aid => {
     const anime = animeDatabase.find(a => a.id === aid);
     if (anime && !seen.has(anime.id)) {
       seen.add(anime.id);
-      // find best matching char in this anime
-      const bestChar = anime.characters.find(c => {
-        const q = query.toLowerCase();
-        return (c.personality||'').toLowerCase().includes(q.split(/\s+/).find(w=>w.length>1)||'___') ||
-               (c.background||'').toLowerCase().includes(q.split(/\s+/).find(w=>w.length>1)||'___');
-      });
-      combined.push({ type:'anime', anime, char: bestChar || anime.characters[0], charIdx: bestChar ? anime.characters.indexOf(bestChar) : 0, score: 100 });
+      // find best matching char in this anime from fuzzy results
+      const bestCharResult = charResults.find(r => r.anime.id === aid);
+      const char = bestCharResult ? bestCharResult.char : anime.characters[0];
+      const charIdx = bestCharResult ? bestCharResult.charIdx : 0;
+      const score = bestCharResult ? bestCharResult.score + 50 : 80;
+      combined.push({ type:'anime', anime, char, charIdx, score });
     }
   });
-  // then: fuzzy char results
+  // then: fuzzy char results for anime not already added
   charResults.forEach(r => {
-    if (!seen.has(r.anime.id + '_' + r.charIdx)) {
-      seen.add(r.anime.id + '_' + r.charIdx);
+    if (!seen.has(r.anime.id)) {
+      seen.add(r.anime.id);
       combined.push({ type:'char', anime: r.anime, char: r.char, charIdx: r.charIdx, score: r.score });
     }
   });
-  // dedupe by anime (keep highest score per anime)
-  const animeSeen = new Set();
-  const deduped = [];
-  combined.forEach(r => {
-    if (!animeSeen.has(r.anime.id)) {
-      animeSeen.add(r.anime.id);
-      deduped.push(r);
-    }
-  });
-  return deduped.sort((a,b) => b.score - a.score);
+  return combined.sort((a,b) => b.score - a.score);
 }
 
 function startSmartSearch() {
