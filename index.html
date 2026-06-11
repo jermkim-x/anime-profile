@@ -358,12 +358,12 @@
   .smart-guide-skip:hover { background:rgba(108,99,255,0.06); }
   .smart-guide-apply { padding:10px 28px; border:none; border-radius:10px; background:var(--gradient-1); color:#fff; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
   .smart-guide-apply:hover { box-shadow:0 4px 20px rgba(108,99,255,0.3); }
-  .smart-confirm-content { text-align:center; padding:20px 0; }
-  .smart-confirm-anime { font-size:20px; font-weight:700; color:var(--accent-light); margin-top:12px; }
-  .smart-confirm-img { margin:20px auto; width:180px; height:250px; border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
+  .smart-confirm-content { text-align:center; padding:12px 0; }
+  .smart-confirm-anime { font-size:18px; font-weight:700; color:var(--accent-light); margin-top:8px; }
+  .smart-confirm-img { margin:12px auto; width:130px; height:180px; border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
   .smart-confirm-img img { width:100%; height:100%; object-fit:cover; }
-  .smart-confirm-desc { font-size:13px; color:var(--text-secondary); line-height:1.8; margin:16px 0; max-width:500px; margin-left:auto; margin-right:auto; }
-  .smart-confirm-actions { display:flex; gap:12px; justify-content:center; margin-top:20px; }
+  .smart-confirm-desc { font-size:12px; color:var(--text-secondary); line-height:1.6; margin:10px auto; max-width:480px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .smart-confirm-actions { display:flex; gap:10px; justify-content:center; margin-top:14px; }
   .smart-confirm-view { padding:12px 32px; border:none; border-radius:10px; background:var(--gradient-1); color:#fff; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
   .smart-confirm-view:hover { box-shadow:0 4px 20px rgba(108,99,255,0.3); }
   .smart-confirm-back { padding:12px 24px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-secondary); font-size:14px; cursor:pointer; transition:all 0.3s; font-family:inherit; }
@@ -1766,6 +1766,42 @@ const animeDatabase = [
         background:'不良人天罡三十六校尉之天佑星，真名石瑶。受袁天罡之命以"孟婆"身份潜伏玄冥教三十年，是教中举足轻重的人物。冥帝朱友珪死后恢复真身，后又奉命再次易容为孟婆接管玄冥教，维持组织运转。其身份反转是故事中最精彩的设计之一，也是不良人卧底体系的缩影。',
         abilities:[{name:'玄冥教功法',value:90,color:'#6c63ff'},{name:'易容术',value:95,color:'#f5576c'},{name:'隐忍',value:100,color:'#00d2ff'},{name:'情报',value:95,color:'#f093fb'},{name:'忠心',value:100,color:'#ffd93d'}],
         titanForms:[], quote:'三十年了，终于不用再演了。', gallery:[]
+      },
+      {
+        name:'朱友珪（冥帝）', nameJp:'朱友珪', cv:'不详', role:'supporting', roleLabel:'核心反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'大梁/玄冥教', status:'梁帝朱温之子/玄冥教创立者', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a0a2a, #5a1a7a)', emoji:'', image:'https://bkimg.cdn.bcebos.com/pic/9358d109b3de9c82d158da7514d7970a19d8bd3ee589?x-bce-process=image/resize,m_lfit,w_300/quality,Q_80',
+        personality:'幼童外貌下藏着极度阴狠扭曲的心智。真实面目为紫面獠牙、头戴骷髅冠的恐怖形象。心思缜密、不择手段，为夺皇位不惜弑父，却终究败于棋高一着的不良帅。',
+        background:'大梁皇帝朱温之子，玄冥教的实际创立者。虽为皇子却不受父宠，联合降臣等尸祖创立玄冥教，以此为根基争夺皇位。修习九幽玄天神功走火入魔，身形退化为幼童模样。在朱温众子中实力最为出众，但终究不是袁天罡的对手，被其利用后抛弃。第一季末被袁天罡亲手击杀，其死直接导致玄冥教权力真空。',
+        abilities:[{name:'九幽玄天神功',value:92,color:'#6c63ff'},{name:'玄冥教势力',value:95,color:'#f5576c'},{name:'阴狠',value:98,color:'#00d2ff'},{name:'谋略',value:82,color:'#f093fb'},{name:'野心',value:95,color:'#ffd93d'}],
+        titanForms:[], quote:'这天下，终归是我朱友珪的。', gallery:[]
+      },
+      {
+        name:'朱友文（鬼王）', nameJp:'朱友文', cv:'不详', role:'supporting', roleLabel:'核心反派',
+        age:'不详', height:'不详', weight:'不详', affiliation:'大梁/玄冥教', status:'梁帝朱温之子/玄冥教鬼王', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #2a0a0a, #8a1a1a)', emoji:'', image:'https://bkimg.cdn.bcebos.com/pic/4034970a304e251f95cac69b20d5de177f3e6709f50f?x-bce-process=image/resize,m_lfit,w_300/quality,Q_80',
+        personality:'嗜血暴虐、力大无穷。朱温众子中武力最强者，性格狂暴而不失狡诈。对力量的追求近乎偏执，信奉弱肉强食。虽为反派，却也有一丝武者尊严。',
+        background:'大梁皇帝朱温之子，朱友珪之弟，号称"鬼王"。武力在朱温众子中首屈一指，实力达到大天位。统领玄冥教最强战力，是玄冥教真正的武力担当。虽然性格粗犷暴烈，实则心思较朱友珪更为单纯，一心以武力碾压一切。在争夺龙泉宝藏的过程中多次与主角团交锋。',
+        abilities:[{name:'蛮力',value:98,color:'#6c63ff'},{name:'九幽玄天神功',value:90,color:'#f5576c'},{name:'暴虐',value:100,color:'#00d2ff'},{name:'战斗本能',value:95,color:'#f093fb'},{name:'武者尊严',value:80,color:'#ffd93d'}],
+        titanForms:[], quote:'力量，才是一切的根本。', gallery:[]
+      },
+      {
+        name:'镜心魔', nameJp:'鏡心魔', cv:'不详', role:'supporting', roleLabel:'重要配角',
+        age:'不详', height:'不详', weight:'不详', affiliation:'通文馆', status:'通文馆十三太保之一', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a2a, #4a4a6a)', emoji:'', image:'https://bkimg.cdn.bcebos.com/pic/37d3d539b6003af33a87690bf67cd15c10385343181b?x-bce-process=image/resize,m_lfit,w_300/quality,Q_80',
+        personality:'外表如伶人戏子，画白脸、点红妆，说话文雅却暗藏杀机。以"镜像"之术观察天下，能够模仿他人功法，是通文馆最诡谲的杀手。表面温文尔雅，实则心狠手辣，杀人于无声。',
+        background:'通文馆十三太保之一，以伶人面具示人的神秘高手。擅长镜像之术，可看穿并模仿对手的功法路数，是通文馆情报网的核心人物。行踪飘忽，来去无踪，常在关键时刻现身扭转战局。对李嗣源忠心耿耿，是通文馆最令人忌惮的存在之一。',
+        abilities:[{name:'镜像之术',value:95,color:'#6c63ff'},{name:'功法模仿',value:92,color:'#f5576c'},{name:'情报',value:90,color:'#00d2ff'},{name:'暗杀',value:88,color:'#f093fb'},{name:'诡谲',value:98,color:'#ffd93d'}],
+        titanForms:[], quote:'镜中花，水中月，你看到的未必是真相。', gallery:[]
+      },
+      {
+        name:'李存礼', nameJp:'李存礼', cv:'不详', role:'supporting', roleLabel:'重要配角',
+        age:'不详', height:'不详', weight:'不详', affiliation:'通文馆', status:'通文馆十三太保之一', birthday:'不详', bloodType:'不详',
+        gradient:'linear-gradient(135deg, #1a1a3a, #4a4a8a)', emoji:'', image:'https://bkimg.cdn.bcebos.com/pic/500fd9f9d72a6059252d6335a862239b033b5bb50cdf?x-bce-process=image/resize,m_lfit,w_300/quality,Q_80',
+        personality:'白衣儒冠、面带微笑，举止温文尔雅，实则心思深沉、算无遗策。是通文馆十三太保中少有的文武双全之人，以智谋见长，被称为"笑面军师"。',
+        background:'通文馆十三太保之一，李克用之义子。着白衣、戴乌纱，风度翩翩却深藏不露。以谋略辅助李嗣源经营通文馆势力，是馆内文韬战略的核心人物。表面恭顺，实则野心暗藏，在通文馆权力更迭中扮演关键角色。',
+        abilities:[{name:'谋略',value:98,color:'#6c63ff'},{name:'五雷天心诀',value:85,color:'#f5576c'},{name:'心机',value:95,color:'#00d2ff'},{name:'交际手腕',value:92,color:'#f093fb'},{name:'隐忍',value:88,color:'#ffd93d'}],
+        titanForms:[], quote:'笑里藏刀，方为上策。', gallery:[]
       }
     ]
   },
@@ -3321,18 +3357,22 @@ function showSmartStage(stage) {
   });
   const map = { input:'smartInputStage', result:'smartResultStage', guide:'smartGuideStage', confirm:'smartConfirmStage' };
   if (map[stage]) document.getElementById(map[stage]).style.display = 'block';
+  // auto-scroll confirm card to ensure actions visible
+  if (stage === 'confirm') {
+    setTimeout(() => { document.getElementById('smartBody').scrollTop = document.getElementById('smartBody').scrollHeight; }, 50);
+  }
 }
 
 // ---- 关键词库 ----
 // 所有ID均为animeDatabase中的anime id
 const smartKeywordMap = {
-  hair: { '银发':['aot','yyht','ccs'], '银色头发':['aot','yyht','ccs'], '金发':['hitman','yyht'], '金色头发':['hitman','yyht'], '红发':['aot','nozaki'], '红头发':['aot','nozaki'], '黑发':['hitman','nozaki','ccs'], '黑色头发':['hitman','nozaki','ccs'], '粉发':['nozaki'], '粉色头发':['nozaki'], '白发':['hitman'], '白色头发':['hitman'], '蓝发':['yyht','railgun'], '蓝色头发':['yyht','railgun'], '绿发':['nozaki'], '绿色头发':['nozaki'], '棕发':['hitman'], '棕色头发':['hitman'] },
-  eyes: { '红眼':['aot','yyht'], '红色眼睛':['aot','yyht'], '蓝眼':['nozaki','ccs'], '蓝色眼睛':['nozaki','ccs'], '金眼':['hitman'], '金色眼睛':['hitman'], '绿眼':['hxh'], '绿色眼睛':['hxh'] },
-  ability: { '巨人':['aot'], '冰':['ccs','yyht'], '冰属性':['ccs','yyht'], '冰冻':['ccs'], '火':['aot','yyht','buliangren'], '火属性':['yyht'], '火焰':['aot','yyht'], '雷':['hitman','yyht'], '雷电':['hitman'], '雷属性':['hitman'], '时间':['hitman'], '时间操控':['hitman'], '空间':['hitman'], '空间能力':['hitman'], '念':['hxh'], '念能力':['hxh'], '超能力':['hxh','railgun'], '电磁':['railgun'], '电磁炮':['railgun'], '超电磁炮':['railgun'], '魔法':['ccs'], '魔法少女':['ccs'], '卡牌':['ccs'], '怪盗':['sainttail'], '蛊术':['buliangren'], '蛊':['buliangren'], '武学':['buliangren'], '武功':['buliangren'], '吸功大法':['buliangren'], '天罡诀':['buliangren'], '噬极兽':['lingcage'], '寄生':['parasyte'], '寄生兽':['parasyte'], '变身':['aot','yyht'], '异能':['hxh','railgun'], '九幽玄天神功':['buliangren'], '至圣乾坤功':['buliangren'], '九幽':['buliangren'] },
-  genre: { '热血':['aot','hxh','op','hitman','yyht'], '治愈':['mermaid'], '搞笑':['nozaki','hitman','god'], '悬疑':['parasyte','lingcage'], '恐怖':['parasyte','lingcage'], '科幻':['lingcage','railgun'], '末日':['lingcage'], '武侠':['buliangren'], '玄幻':['buliangren'], '动作':['aot','hxh','op','hitman','lingcage','yyht','wataru'], '恋爱':['ccs','sainttail','nozaki','mermaid'], '校园':['ccs','nozaki','railgun'], '日常':['nozaki','god'], '地狱':['god'], '冥界':['god'], '历史':['qinshm'], '战争':['aot','nntx'], '机甲':['wataru'], '魔法':['ccs'], '海洋':['mermaid','op'], '海盗':['op'], '忍者':['hxh'], '猎人':['hxh'], '杀手':['hitman','parasyte'], '国漫':['buliangren','lingcage','nntx','qinshm','jiangye'] },
-  anime: { '进击':['aot'], '巨人':['aot'], '艾伦':['aot'], '三笠':['aot'], '利威尔':['aot'], '兵长':['aot'], '魔卡':['ccs'], '小樱':['ccs'], '库洛牌':['ccs'], '木之本樱':['ccs'], '怪盗':['sainttail'], '圣少女':['sainttail'], '羽丘':['sainttail'], '人鱼':['mermaid'], '七海':['mermaid'], '露亚':['mermaid'], '月刊':['nozaki'], '佐仓':['nozaki'], '野崎':['nozaki'], '幽游':['yyht'], '浦饭':['yyht'], '藏马':['yyht'], '飞影':['yyht'], '全职':['hxh'], '小杰':['hxh'], '奇犽':['hxh'], '酷拉皮卡':['hxh'], '家庭':['hitman'], '家教':['hitman'], '纲吉':['hitman'], '阿纲':['hitman'], 'Reborn':['hitman'], '不良人':['buliangren'], '李星云':['buliangren'], '袁天罡':['buliangren'], '灵笼':['lingcage'], '马克':['lingcage'], '白月魁':['lingcage'], '噬极兽':['lingcage'], '那兔':['nntx'], '神龙':['wataru'], '战部渡':['wataru'], '海贼':['op'], '路飞':['op'], '索隆':['op'], '将夜':['jiangye'], '秦时':['qinshm'], '鬼灯':['god'], '超电磁炮':['railgun'], '御坂':['railgun'], '炮姐':['railgun'], '寄生兽':['parasyte'], '右太郎':['parasyte'], '小白':['parasyte'] },
-  scene: { '城墙':['aot'], '城墙被打破':['aot'], '巨人入侵':['aot'], '立体机动装置':['aot'], '调查兵团':['aot'], '灯塔':['lingcage'], '高塔':['lingcage'], '末日后':['lingcage'], '世界末日':['lingcage'], '海洋学院':['mermaid'], '海底':['mermaid'], '冥界地狱':['god'], '江户时代':['yyht'], '唐朝':['buliangren'], '江湖':['buliangren'], '武侠世界':['buliangren'], '猎人考试':['hxh'], '彭格列':['hitman'], '黑手党':['hitman'], '伟大航路':['op'], '新世界':['op'], '学园都市':['railgun'] },
-  trait: { '傲娇':['ccs','sainttail'], '冷酷':['aot','yyht','god'], '温柔':['ccs','mermaid','nozaki'], '热血':['aot','hxh','wataru','hitman','yyht'], '腹黑':['nozaki','hitman'], '呆萌':['nozaki','mermaid'], '坚强':['aot','sainttail','buliangren'], '神秘':['aot','hxh','lingcage'], '搞笑':['nozaki','hitman','god'], '反派':['aot','hitman','buliangren','lingcage','hxh'], '冷艳':['yyht','ccs','buliangren'], '腹黑':['nozaki','hitman','god'], '霸气':['aot','buliangren','yyht'], '双重人格':['buliangren'] }
+  hair: { '银发':['aot','yyht','ccs'], '银色头发':['aot','yyht','ccs'], '银色长发':['aot'], '金发':['hitman','yyht'], '金色头发':['hitman','yyht'], '红发':['aot','nozaki'], '红头发':['aot','nozaki'], '黑发':['hitman','nozaki','ccs'], '黑色头发':['hitman','nozaki','ccs'], '粉发':['nozaki'], '粉色头发':['nozaki'], '白发':['hitman'], '白色头发':['hitman'], '蓝发':['yyht','railgun'], '蓝色头发':['yyht','railgun'], '绿发':['nozaki'], '绿色头发':['nozaki'], '棕发':['hitman'], '棕色头发':['hitman'], '紫发':['ccs','buliangren'], '紫色头发':['ccs','buliangren'], '短发':['nozaki','aot'], '长发':['ccs','mermaid','yyht'], '马尾':['ccs','railgun'], '双马尾':['ccs','railgun'], '披肩发':['buliangren'], '光头':['god'] },
+  eyes: { '红眼':['aot','yyht'], '红色眼睛':['aot','yyht'], '红瞳':['aot','yyht'], '蓝眼':['nozaki','ccs'], '蓝色眼睛':['nozaki','ccs'], '金眼':['hitman'], '金色眼睛':['hitman'], '绿眼':['hxh'], '绿色眼睛':['hxh'], '紫瞳':['ccs'], '异色瞳':['aot'], '金瞳':['buliangren'], '金色左瞳':['buliangren'] },
+  ability: { '巨人':['aot'], '冰':['ccs','yyht'], '冰属性':['ccs','yyht'], '冰冻':['ccs'], '火':['aot','yyht','buliangren'], '火属性':['yyht'], '火焰':['aot','yyht'], '雷':['hitman','yyht'], '雷电':['hitman'], '雷属性':['hitman'], '时间':['hitman'], '时间操控':['hitman'], '空间':['hitman'], '空间能力':['hitman'], '念':['hxh'], '念能力':['hxh'], '超能力':['hxh','railgun'], '电磁':['railgun'], '电磁炮':['railgun'], '超电磁炮':['railgun'], '魔法':['ccs'], '魔法少女':['ccs'], '卡牌':['ccs'], '怪盗':['sainttail'], '蛊术':['buliangren'], '蛊':['buliangren'], '武学':['buliangren'], '武功':['buliangren'], '吸功大法':['buliangren'], '天罡诀':['buliangren'], '噬极兽':['lingcage'], '寄生':['parasyte'], '寄生兽':['parasyte'], '变身':['aot','yyht'], '异能':['hxh','railgun'], '九幽玄天神功':['buliangren'], '至圣乾坤功':['buliangren'], '九幽':['buliangren'], '变身巨人':['aot'], '立体机动装置':['aot'], '刀剑':['aot','yyht','buliangren'], '弓箭':['aot'], '枪械':['lingcage','parasyte'], '五雷天心诀':['buliangren'], '幻音诀':['buliangren'], '青莲剑歌':['buliangren'], '音波功':['buliangren'], '海洋魔法':['mermaid'], '歌声':['mermaid'], '变身美人鱼':['mermaid'], '机甲驾驶':['wataru'], '橡皮身体':['op'], '恶魔果实':['op'], '霸气':['op'], '超凡能力':['lingcage','railgun'], '念动力':['railgun'], '克隆体':['lingcage'], '嵌合体':['lingcage'], '异形':['lingcage','parasyte'], '兽化':['lingcage','aot'], '体术':['hxh','yyht'] },
+  genre: { '热血':['aot','hxh','op','hitman','yyht'], '治愈':['mermaid'], '搞笑':['nozaki','hitman','god'], '悬疑':['parasyte','lingcage'], '恐怖':['parasyte','lingcage'], '科幻':['lingcage','railgun'], '末日':['lingcage'], '武侠':['buliangren'], '玄幻':['buliangren'], '动作':['aot','hxh','op','hitman','lingcage','yyht','wataru'], '恋爱':['ccs','sainttail','nozaki','mermaid'], '校园':['ccs','nozaki','railgun'], '日常':['nozaki','god'], '地狱':['god'], '冥界':['god'], '历史':['qinshm'], '战争':['aot','nntx'], '机甲':['wataru'], '魔法':['ccs'], '海洋':['mermaid','op'], '海盗':['op'], '忍者':['hxh'], '猎人':['hxh'], '杀手':['hitman','parasyte'], '国漫':['buliangren','lingcage','nntx','qinshm','jiangye'], '冒险':['hxh','op','wataru'], '奇幻':['ccs','yyht','wataru'], '少女':['ccs','mermaid','sainttail'], '黑暗':['aot','parasyte','lingcage'], '群像':['hitman','buliangren'], '经典':['yyht','hxh','aot'], '童年':['wataru','sainttail','mermaid','ccs'], '怀旧':['yyht','wataru','sainttail'] },
+  anime: { '进击':['aot'], '巨人':['aot'], '艾伦':['aot'], '三笠':['aot'], '利威尔':['aot'], '兵长':['aot'], '阿尔敏':['aot'], '埃尔文':['aot'], '魔卡':['ccs'], '小樱':['ccs'], '库洛牌':['ccs'], '木之本樱':['ccs'], '知世':['ccs'], '小可':['ccs'], '怪盗':['sainttail'], '圣少女':['sainttail'], '羽丘':['sainttail'], '人鱼':['mermaid'], '七海':['mermaid'], '露亚':['mermaid'], '月刊':['nozaki'], '佐仓':['nozaki'], '野崎':['nozaki'], '幽游':['yyht'], '浦饭':['yyht'], '藏马':['yyht'], '飞影':['yyht'], '桑原':['yyht'], '全职':['hxh'], '小杰':['hxh'], '奇犽':['hxh'], '酷拉皮卡':['hxh'], '雷欧力':['hxh'], '西索':['hxh'], '家庭':['hitman'], '家教':['hitman'], '纲吉':['hitman'], '阿纲':['hitman'], 'Reborn':['hitman'], '六道骸':['hitman'], '不良人':['buliangren'], '李星云':['buliangren'], '袁天罡':['buliangren'], '姬如雪':['buliangren'], '蚩梦':['buliangren'], '冥帝':['buliangren'], '鬼王':['buliangren'], '朱友珪':['buliangren'], '朱友文':['buliangren'], '镜心魔':['buliangren'], '李存礼':['buliangren'], '萤勾':['buliangren'], '阿姐':['buliangren'], '降臣':['buliangren'], '旱魃':['buliangren'], '石瑶':['buliangren'], '孟婆':['buliangren'], '李克用':['buliangren'], '李茂贞':['buliangren'], '女帝':['buliangren'], '灵笼':['lingcage'], '马克':['lingcage'], '白月魁':['lingcage'], '冉冰':['lingcage'], '查尔斯':['lingcage'], '噬极兽':['lingcage'], '那兔':['nntx'], '神龙':['wataru'], '战部渡':['wataru'], '海贼':['op'], '路飞':['op'], '索隆':['op'], '山治':['op'], '娜美':['op'], '罗宾':['op'], '将夜':['jiangye'], '秦时':['qinshm'], '鬼灯':['god'], '超电磁炮':['railgun'], '御坂':['railgun'], '炮姐':['railgun'], '初春':['railgun'], '白井黑子':['railgun'], '寄生兽':['parasyte'], '右太郎':['parasyte'], '小白':['parasyte'], '田村铃子':['parasyte'], '黑崎一护':['yyht'], '大天位':['buliangren'], '尸祖':['buliangren'], '幻音坊':['buliangren'], '通文馆':['buliangren'], '玄冥教':['buliangren'], '天师府':['buliangren'], '猎荒者':['lingcage'], '光影会':['lingcage'], '灯塔':['lingcage'], '彭格列':['hitman'], '调查兵团':['aot'], '草帽':['op'] },
+  scene: { '城墙':['aot'], '城墙被打破':['aot'], '巨人入侵':['aot'], '立体机动装置':['aot'], '调查兵团':['aot'], '灯塔':['lingcage'], '高塔':['lingcage'], '末日后':['lingcage'], '世界末日':['lingcage'], '海洋学院':['mermaid'], '海底':['mermaid'], '冥界地狱':['god'], '江户时代':['yyht'], '唐朝':['buliangren'], '唐朝末年':['buliangren'], '江湖':['buliangren'], '武侠世界':['buliangren'], '苗疆':['buliangren'], '猎人考试':['hxh'], '彭格列':['hitman'], '伟大航路':['op'], '新世界':['op'], '学园都市':['railgun'], '地鸣':['aot'], '壁外远征':['aot'], '地下街':['aot'], '龙泉宝藏':['buliangren'], '噬极兽攻城':['lingcage'], '腥漩':['lingcage'], '玛娜生态':['lingcage'], '琴瑟和鸣':['mermaid'], '秦朝':['qinshm'], '诸子百家':['qinshm'], '墨家':['qinshm'], '地狱办公':['god'], '鬼灯办公室':['god'], '桃源乡':['god'], '创界山':['wataru'], '救世主':['wataru'], '龙神町':['wataru'] },
+  trait: { '傲娇':['ccs','sainttail','railgun'], '冷酷':['aot','yyht','god'], '温柔':['ccs','mermaid','nozaki'], '热血':['aot','hxh','wataru','hitman','yyht'], '腹黑':['nozaki','hitman','god'], '呆萌':['nozaki','mermaid'], '坚强':['aot','sainttail','buliangren'], '神秘':['aot','hxh','lingcage'], '搞笑':['nozaki','hitman','god'], '反派':['aot','hitman','buliangren','lingcage','hxh'], '冷艳':['yyht','ccs','buliangren'], '霸气':['aot','buliangren','yyht','op'], '双重人格':['buliangren'], '腹黑':['nozaki','hitman','god'], '话痨':['god','nozaki'], '天然呆':['nozaki','mermaid'], '抖S':['railgun','hitman'], '中二病':['hitman'], '高冷':['aot','yyht'], '萝莉':['ccs','railgun','mermaid'], '正太':['hxh','hitman'], '大叔':['god','parasyte'], '忠犬':['hitman','aot'], '病娇':['aot'], '天才':['railgun','hxh'], '笨蛋':['nozaki','hitman'], '面瘫':['aot'], '毒舌':['god','aot'], '乐天派':['hxh','op'], '伪娘':['yyht'], '亦正亦邪':['buliangren','hxh'] }
 };
 
 function extractKeywords(query) {
@@ -3468,15 +3508,13 @@ function confirmSmartResult(animeId, charIdx) {
   const season = hasLink ? anime.seasons[0] : null;
   const content = document.getElementById('smartConfirmContent');
   content.innerHTML = `
-    <div style="font-size:48px;margin-bottom:8px;">🎯</div>
-    <div>找到匹配结果！</div>
     <div class="smart-confirm-img">
-      ${char && char.image ? `<img src="${char.image}" alt="${char.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:64px;\\'>${anime.icon||'🎬'}</div>'">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:64px;">${anime.icon||'🎬'}</div>`}
+      ${char && char.image ? `<img src="${char.image}" alt="${char.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;\\'>${anime.icon||'🎬'}</div>'">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;">${anime.icon||'🎬'}</div>`}
     </div>
     <div class="smart-confirm-anime">${anime.name}</div>
-    ${char ? `<div style="font-size:16px;color:var(--text-primary);margin-top:4px;">${char.name}</div>` : ''}
-    <div class="smart-confirm-desc">${char ? (char.personality || anime.synopsis.substring(0,100)) : anime.synopsis.substring(0,100)}</div>
-    ${hasLink ? `<a href="${season.link}" target="_blank" rel="noopener noreferrer" class="smart-card-link" style="font-size:14px;padding:10px 28px;display:inline-block;margin-bottom:16px;">▶ ${season.linkLabel || '在线观看'}</a>` : ''}
+    ${char ? `<div style="font-size:14px;color:var(--text-primary);margin-top:4px;">${char.name}</div>` : ''}
+    <div class="smart-confirm-desc">${char ? (char.personality ? char.personality.substring(0,80) : anime.synopsis.substring(0,60)) : anime.synopsis.substring(0,60)}</div>
+    ${hasLink ? `<a href="${season.link}" target="_blank" rel="noopener noreferrer" class="smart-card-link" style="font-size:13px;padding:8px 24px;display:inline-block;margin-bottom:10px;">▶ ${season.linkLabel || '在线观看'}</a>` : ''}
     <div class="smart-confirm-actions">
       <button class="smart-confirm-back" onclick="showSmartStage('result')">返回结果列表</button>
       <button class="smart-confirm-view" onclick="jumpToAnime('${animeId}')">查看完整档案</button>
