@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -289,6 +289,93 @@
     .anime-synopsis,.characters-section,.seasons-section { padding:24px 20px; }
     .anime-banner .banner-overlay { padding:20px; }
   }
+
+  /* ========== 智能查找面板 ========== */
+  .smart-overlay { position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); }
+  .smart-overlay.show { display:flex; }
+  .smart-panel { width:720px; max-width:95vw; max-height:90vh; background:linear-gradient(135deg,#12121f,#1a1a30); border:1px solid var(--border); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+  .smart-header { display:flex; align-items:center; justify-content:space-between; padding:24px 28px; border-bottom:1px solid var(--border); background:rgba(108,99,255,0.06); }
+  .smart-header-left { display:flex; align-items:center; gap:14px; }
+  .smart-header-icon { font-size:32px; }
+  .smart-header h2 { font-size:20px; font-weight:700; background:var(--gradient-1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .smart-header-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .smart-close { width:36px; height:36px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:22px; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; }
+  .smart-close:hover { background:rgba(255,60,60,0.15); border-color:#ff3c3c; color:#ff3c3c; }
+  .smart-body { padding:24px 28px; overflow-y:auto; flex:1; }
+  .smart-input-area textarea { width:100%; padding:16px; background:rgba(108,99,255,0.06); border:1px solid var(--border); border-radius:14px; color:var(--text-primary); font-size:14px; font-family:inherit; resize:vertical; outline:none; transition:all 0.3s; line-height:1.8; }
+  .smart-input-area textarea::placeholder { color:var(--text-muted); }
+  .smart-input-area textarea:focus { border-color:var(--accent); background:rgba(108,99,255,0.1); }
+  .smart-search-btn { margin-top:14px; width:100%; padding:14px; border:none; border-radius:12px; background:var(--gradient-1); color:#fff; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-search-btn:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(108,99,255,0.4); }
+  .smart-search-btn:active { transform:translateY(0); }
+  .smart-examples { margin-top:20px; }
+  .smart-examples-title { font-size:12px; color:var(--text-muted); margin-bottom:10px; }
+  .smart-example-tags { display:flex; flex-wrap:wrap; gap:8px; }
+  .smart-tag { padding:6px 14px; background:rgba(108,99,255,0.08); border:1px solid var(--border); border-radius:20px; font-size:12px; color:var(--text-secondary); cursor:pointer; transition:all 0.3s; }
+  .smart-tag:hover { background:rgba(108,99,255,0.18); border-color:var(--accent); color:var(--text-primary); }
+  .smart-search-entry { display:flex; align-items:center; gap:10px; padding:12px 24px; cursor:pointer; transition:all 0.3s ease; border-left:3px solid transparent; color:var(--text-secondary); font-size:14px; }
+  .smart-search-entry:hover { background:rgba(108,99,255,0.08); border-left-color:var(--accent); color:var(--accent-light); }
+  .smart-search-entry .smart-icon { font-size:18px; width:24px; text-align:center; }
+  .smart-result-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .smart-result-info { font-size:14px; color:var(--text-secondary); }
+  .smart-result-info strong { color:var(--accent-light); }
+  .smart-refine-btn { padding:8px 16px; background:rgba(108,99,255,0.12); border:1px solid var(--border); border-radius:8px; color:var(--accent-light); font-size:12px; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-refine-btn:hover { background:rgba(108,99,255,0.22); }
+  .smart-result-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .smart-card { border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:all 0.3s; background:rgba(26,26,46,0.8); }
+  .smart-card:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:0 8px 30px rgba(108,99,255,0.2); }
+  .smart-card-img { height:160px; overflow:hidden; position:relative; }
+  .smart-card-img img { width:100%; height:100%; object-fit:cover; }
+  .smart-card-img .smart-card-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:48px; background:linear-gradient(135deg,#1a1a2e,#2a2a4e); }
+  .smart-card-badge { position:absolute; top:8px; right:8px; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:600; }
+  .smart-card-badge.link { background:rgba(0,200,100,0.85); color:#fff; }
+  .smart-card-badge.char { background:rgba(108,99,255,0.85); color:#fff; }
+  .smart-card-body { padding:12px; }
+  .smart-card-anime { font-size:11px; color:var(--text-muted); margin-bottom:4px; }
+  .smart-card-name { font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px; }
+  .smart-card-detail { font-size:11px; color:var(--text-secondary); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .smart-card-link-row { margin-top:8px; }
+  .smart-card-link { display:inline-block; padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600; color:#fff; background:linear-gradient(135deg,#00c853,#00a040); text-decoration:none; transition:all 0.3s; }
+  .smart-card-link:hover { transform:scale(1.05); }
+  .smart-none-row { text-align:center; margin-top:20px; }
+  .smart-none-btn { padding:12px 28px; border:1px solid rgba(255,80,80,0.3); border-radius:10px; background:rgba(255,80,80,0.08); color:#ff6b6b; font-size:14px; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-none-btn:hover { background:rgba(255,80,80,0.18); border-color:rgba(255,80,80,0.5); }
+  .smart-guide-header { text-align:center; margin-bottom:24px; }
+  .smart-guide-header h3 { font-size:18px; font-weight:700; color:var(--text-primary); }
+  .smart-guide-header p { font-size:13px; color:var(--text-muted); margin-top:4px; }
+  .smart-guide-questions { display:flex; flex-direction:column; gap:16px; }
+  .smart-guide-q { background:rgba(108,99,255,0.06); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .smart-guide-q-label { font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .smart-guide-q-label .q-icon { font-size:16px; }
+  .smart-guide-q-options { display:flex; flex-wrap:wrap; gap:8px; }
+  .smart-guide-opt { padding:6px 14px; border:1px solid var(--border); border-radius:8px; font-size:12px; color:var(--text-secondary); background:transparent; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-guide-opt:hover { border-color:var(--accent); color:var(--accent-light); }
+  .smart-guide-opt.selected { background:rgba(108,99,255,0.2); border-color:var(--accent); color:var(--accent-light); }
+  .smart-guide-opt input[type="text"] { padding:6px 12px; background:rgba(108,99,255,0.06); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:12px; outline:none; width:140px; font-family:inherit; }
+  .smart-guide-opt input[type="text"]:focus { border-color:var(--accent); }
+  .smart-guide-actions { display:flex; justify-content:center; gap:14px; margin-top:24px; }
+  .smart-guide-skip { padding:10px 24px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-secondary); font-size:13px; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-guide-skip:hover { background:rgba(108,99,255,0.06); }
+  .smart-guide-apply { padding:10px 28px; border:none; border-radius:10px; background:var(--gradient-1); color:#fff; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-guide-apply:hover { box-shadow:0 4px 20px rgba(108,99,255,0.3); }
+  .smart-confirm-content { text-align:center; padding:20px 0; }
+  .smart-confirm-anime { font-size:20px; font-weight:700; color:var(--accent-light); margin-top:12px; }
+  .smart-confirm-img { margin:20px auto; width:180px; height:250px; border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
+  .smart-confirm-img img { width:100%; height:100%; object-fit:cover; }
+  .smart-confirm-desc { font-size:13px; color:var(--text-secondary); line-height:1.8; margin:16px 0; max-width:500px; margin-left:auto; margin-right:auto; }
+  .smart-confirm-actions { display:flex; gap:12px; justify-content:center; margin-top:20px; }
+  .smart-confirm-view { padding:12px 32px; border:none; border-radius:10px; background:var(--gradient-1); color:#fff; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-confirm-view:hover { box-shadow:0 4px 20px rgba(108,99,255,0.3); }
+  .smart-confirm-back { padding:12px 24px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-secondary); font-size:14px; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+  .smart-confirm-back:hover { background:rgba(108,99,255,0.06); }
+  .smart-thinking { text-align:center; padding:40px; }
+  .smart-thinking-spinner { width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:smartSpin 0.8s linear infinite; margin:0 auto 16px; }
+  @keyframes smartSpin { to { transform:rotate(360deg); } }
+  .smart-thinking-text { color:var(--text-secondary); font-size:14px; }
+  .smart-footer { padding:12px 28px; border-top:1px solid var(--border); }
+  .smart-history { display:flex; flex-wrap:wrap; gap:6px; }
+  .smart-history-tag { padding:3px 10px; background:rgba(108,99,255,0.06); border-radius:12px; font-size:11px; color:var(--text-muted); cursor:pointer; transition:all 0.3s; }
+  .smart-history-tag:hover { color:var(--accent-light); background:rgba(108,99,255,0.12); }
 </style>
 </head>
 <body>
@@ -305,6 +392,11 @@
     <div class="home-btn" onclick="goHome()">
       <span class="home-icon">🏠</span>
       <span>返回首页</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="smart-search-entry" onclick="openSmartSearch()">
+      <span class="smart-icon">🧠</span>
+      <span>智能查找动漫</span>
     </div>
     <div class="sidebar-divider"></div>
     <div class="search-box">
@@ -333,6 +425,79 @@
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ========== 智能查找面板 ========== -->
+<div class="smart-overlay" id="smartOverlay">
+  <div class="smart-panel">
+    <div class="smart-header">
+      <div class="smart-header-left">
+        <span class="smart-header-icon">🧠</span>
+        <div>
+          <h2>智能查找动漫</h2>
+          <p class="smart-header-sub">描述你记忆中的角色、场景或剧情，帮你精准定位</p>
+        </div>
+      </div>
+      <button class="smart-close" onclick="closeSmartSearch()">&times;</button>
+    </div>
+
+    <div class="smart-body" id="smartBody">
+      <!-- 阶段1: 输入描述 -->
+      <div id="smartInputStage">
+        <div class="smart-input-area">
+          <textarea id="smartQuery" placeholder="试试描述你记得的内容...&#10;&#10;例如：一个银发红眼的女角色，会用冰属性的攻击&#10;例如：主角可以变成巨人战斗，城墙被打破&#10;例如：校园搞笑番，男主画少女漫画" rows="5"></textarea>
+          <button class="smart-search-btn" onclick="startSmartSearch()">
+            <span>🔍</span> 开始匹配
+          </button>
+        </div>
+        <div class="smart-examples">
+          <div class="smart-examples-title">你可以这样描述：</div>
+          <div class="smart-example-tags">
+            <span class="smart-tag" onclick="fillSmartQuery('银发红瞳的冷艳女角色')">🧝 外貌特征</span>
+            <span class="smart-tag" onclick="fillSmartQuery('主角能变成巨人战斗')">⚔️ 特殊能力</span>
+            <span class="smart-tag" onclick="fillSmartQuery('搞笑校园番，男主很迟钝')">😊 动漫风格</span>
+            <span class="smart-tag" onclick="fillSmartQuery('主角有个黑化的双胞胎兄弟')">👥 人物关系</span>
+            <span class="smart-tag" onclick="fillSmartQuery('世界末日人类躲在高塔里')">🌍 世界观设定</span>
+            <span class="smart-tag" onclick="fillSmartQuery('收集卡牌的魔法少女')">🎴 关键道具</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 阶段2: 结果展示 -->
+      <div id="smartResultStage" style="display:none;">
+        <div class="smart-result-header">
+          <div class="smart-result-info" id="smartResultInfo"></div>
+          <button class="smart-refine-btn" onclick="showRefinePanel()">🔎 继续细化</button>
+        </div>
+        <div id="smartResultCards" class="smart-result-cards"></div>
+        <div class="smart-none-row">
+          <button class="smart-none-btn" onclick="smartNoneOfThese()">❌ 都不是 — 获取更多引导</button>
+        </div>
+      </div>
+
+      <!-- 阶段3: 引导问卷 -->
+      <div id="smartGuideStage" style="display:none;">
+        <div class="smart-guide-header">
+          <h3>让我们缩小范围</h3>
+          <p>选择你能确认的信息，不确定的可以跳过</p>
+        </div>
+        <div id="smartGuideQuestions" class="smart-guide-questions"></div>
+        <div class="smart-guide-actions">
+          <button class="smart-guide-skip" onclick="skipGuide()">跳过，用现有信息搜索</button>
+          <button class="smart-guide-apply" onclick="applyGuide()">🎯 重新匹配</button>
+        </div>
+      </div>
+
+      <!-- 阶段4: 确认弹窗 -->
+      <div id="smartConfirmStage" style="display:none;">
+        <div class="smart-confirm-content" id="smartConfirmContent"></div>
+      </div>
+    </div>
+
+    <div class="smart-footer">
+      <div class="smart-history" id="smartHistory"></div>
+    </div>
   </div>
 </div>
 
@@ -3130,6 +3295,283 @@ function showPhageDetail(idx) {
     </div>
   `;
   document.getElementById('modalOverlay').classList.add('show');
+}
+
+// ========== 智能查找引擎 ==========
+let smartState = { query: '', results: [], guideAnswers: {}, round: 0, history: [] };
+
+function openSmartSearch() {
+  document.getElementById('smartOverlay').classList.add('show');
+  showSmartStage('input');
+}
+
+function closeSmartSearch() {
+  document.getElementById('smartOverlay').classList.remove('show');
+}
+
+document.getElementById('smartOverlay').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeSmartSearch(); });
+
+function fillSmartQuery(text) {
+  document.getElementById('smartQuery').value = text;
+}
+
+function showSmartStage(stage) {
+  ['smartInputStage','smartResultStage','smartGuideStage','smartConfirmStage'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  const map = { input:'smartInputStage', result:'smartResultStage', guide:'smartGuideStage', confirm:'smartConfirmStage' };
+  if (map[stage]) document.getElementById(map[stage]).style.display = 'block';
+}
+
+// ---- 关键词库 ----
+const smartKeywordMap = {
+  hair: { '银发':['34879','56059','60851','137755'], '银色头发':['34879','56059','60851','137755'], '金发':['4075','56880','107843','103074'], '金色头发':['4075','56880','107843','103074'], '红发':['44058','56880'], '红头发':['44058','56880'], '黑发':['51279','107843'], '黑色头发':['51279','107843'], '粉发':['56880'], '粉色头发':['56880'], '紫发':['146401'], '紫色头发':['146401'], '蓝发':['60851'], '蓝色头发':['60851'], '白发':['90548'], '白色头发':['90548'], '绿发':['44cc44'], '绿色头发':['44cc44'], '棕发':['103074'], '棕色头发':['103074'] },
+  eyes: { '红眼':['34879','44058','56059','137755'], '红色眼睛':['34879','44058','56059','137755'], '蓝眼':['4075','60851','107843'], '蓝色眼睛':['4075','60851','107843'], '金眼':['90548'], '金色眼睛':['90548'], '绿眼':['44cc44'], '绿色眼睛':['44cc44'] },
+  ability: { '巨人':['aot'], '冰':['51279','34879'], '冰属性':['51279','34879'], '冰冻':['51279','34879'], '火':['44058','56880','44cc44'], '火属性':['44058'], '火焰':['44058'], '雷':['107843','44cc44'], '雷电':['107843'], '雷属性':['107843'], '时间':['90548'], '时间操控':['90548'], '空间':['90548'], '空间能力':['90548'], '念':['hxh'], '念能力':['hxh'], '超能力':['hxh','railgun'], '电磁':['railgun'], '电磁炮':['railgun'], '超电磁炮':['railgun'], '魔法':['ccs'], '魔法少女':['ccs'], '卡牌':['ccs'], '怪盗':['sainttail'], '盗贼':['sainttail'], '蛊术':['buliangren'], '蛊':['buliangren'], '武学':['buliangren'], '武功':['buliangren'], '吸功大法':['buliangren'], '天罡诀':['buliangren'], '壁咚':['buliangren'], '噬极兽':['lingcage'], '寄生':['parasyte'], '寄生兽':['parasyte'], '变身':['aot','yyht'], '异能':['hxh','railgun'] },
+  genre: { '热血':['aot','hxh','op','hitman','yyht'], '治愈':['mermaid'], '搞笑':['nozaki','hitman'], '悬疑':['parasyte','lingcage'], '恐怖':['parasyte','lingcage'], '科幻':['lingcage','railgun'], '末日':['lingcage'], '末日科幻':['lingcage'], '武侠':['buliangren'], '玄幻':['buliangren'], '动作':['aot','hxh','op','hitman','lingcage','yyht'], '恋爱':['ccs','sainttail','nozaki','mermaid'], '校园':['ccs','nozaki','railgun'], '日常':['nozaki','god'], '地狱':['god'], '冥界':['god'], '历史':['qinshm'], '战争':['aot','nntx'], '机甲':['wataru'], '魔法':['ccs'], '海洋':['mermaid','op'], '海盗':['op'], '忍者':['hxh'], '猎人':['hxh'], '杀手':['hitman','parasyte'] },
+  anime: { '进击':['aot'], '巨人':['aot'], '艾伦':['aot'], '三笠':['aot'], '利威尔':['aot'], '兵长':['aot'], '魔卡':['ccs'], '小樱':['ccs'], '库洛牌':['ccs'], '木之本樱':['ccs'], '怪盗':['sainttail'], '圣少女':['sainttail'], '羽丘':['sainttail'], '人鱼':['mermaid'], '七海':['mermaid'], '露亚':['mermaid'], '月刊':['nozaki'], '佐仓':['nozaki'], '野崎':['nozaki'], '幽游':['yyht'], '浦饭':['yyht'], '藏马':['yyht'], '飞影':['yyht'], '全职':['hxh'], '小杰':['hxh'], '奇犽':['hxh'], '酷拉皮卡':['hxh'], '家庭':['hitman'], '家教':['hitman'], '纲吉':['hitman'], '阿纲':['hitman'], 'Reborn':['hitman'], '不良人':['buliangren'], '李星云':['buliangren'], '袁天罡':['buliangren'], '灵笼':['lingcage'], '马克':['lingcage'], '白月魁':['lingcage'], '噬极兽':['lingcage'], '那兔':['nntx'], '神龙':['wataru'], '战部渡':['wataru'], '海贼':['op'], '路飞':['op'], '索隆':['op'], '将夜':['jiangye'], '秦时':['qinshm'], '鬼灯':['god'], '超电磁炮':['railgun'], '御坂':['railgun'], '炮姐':['railgun'], '寄生兽':['parasyte'], '右太郎':['parasyte'], '小白':['parasyte'] },
+  scene: { '城墙':['aot'], '城墙被打破':['aot'], '巨人入侵':['aot'], '立体机动装置':['aot'], '调查兵团':['aot'], '灯塔':['lingcage'], '高塔':['lingcage'], '末日后':['lingcage'], '世界末日':['lingcage'], '海洋学院':['mermaid'], '海底':['mermaid'], '冥界地狱':['god'], '江户时代':['yyht'], '唐朝':['buliangren'], '江湖':['buliangren'], '武侠世界':['buliangren'], '忍者村':['hxh'], '猎人考试':['hxh'], '彭格列':['hitman'], '黑手党':['hitman'], '伟大航路':['op'], '新世界':['op'], '时空裂缝':['railgun'], '学园都市':['railgun'] },
+  trait: { '傲娇':['ccs','sainttail'], '冷酷':['aot','yyht','god'], '温柔':['ccs','mermaid','nozaki'], '热血':['aot','hxh','wataru','hitman','yyht'], '腹黑':['nozaki','hitman'], '呆萌':['nozaki','mermaid'], '坚强':['aot','sainttail','buliangren'], '神秘':['aot','hxh','lingcage'], '搞笑':['nozaki','hitman','god'], '反派':['aot','hitman','buliangren','lingcage','hxh'] }
+};
+
+function extractKeywords(query) {
+  const hits = { charIds: new Set(), animeIds: new Set() };
+  const q = query.toLowerCase();
+  for (const [category, map] of Object.entries(smartKeywordMap)) {
+    for (const [keyword, ids] of Object.entries(map)) {
+      if (q.includes(keyword.toLowerCase())) {
+        ids.forEach(id => {
+          if (id.length < 6) hits.animeIds.add(id);
+          else hits.charIds.add(id);
+        });
+      }
+    }
+  }
+  return hits;
+}
+
+function fuzzyMatchCharacter(query) {
+  const q = query.toLowerCase();
+  const results = [];
+  animeDatabase.forEach(anime => {
+    anime.characters.forEach((char, idx) => {
+      let score = 0;
+      // name match
+      if (char.name.toLowerCase().includes(q) || char.nameJp.toLowerCase().includes(q)) score += 50;
+      // personality match
+      if (char.personality && char.personality.toLowerCase().includes(q)) score += 20;
+      // background match
+      if (char.background && char.background.toLowerCase().includes(q)) score += 15;
+      // abilities match
+      if (char.abilities) char.abilities.forEach(a => { if (a.name.toLowerCase().includes(q)) score += 15; });
+      // affiliation/status match
+      if (char.affiliation && char.affiliation.toLowerCase().includes(q)) score += 10;
+      if (char.status && char.status.toLowerCase().includes(q)) score += 10;
+      // quote match
+      if (char.quote && char.quote.toLowerCase().includes(q)) score += 5;
+      if (score > 0) results.push({ anime, char, charIdx: idx, score });
+    });
+  });
+  // individual keyword scoring
+  const words = q.replace(/[，。！？、的了是在有和与而但却也都]/g, ' ').split(/\s+/).filter(w => w.length > 1);
+  results.forEach(r => {
+    words.forEach(w => {
+      const fields = [r.char.name, r.char.nameJp, r.char.personality||'', r.char.background||'', r.char.affiliation||'', r.char.status||'', ...( r.char.abilities||[]).map(a=>a.name)];
+      fields.forEach(f => { if (f.toLowerCase().includes(w)) r.score += 5; });
+      if (r.anime.name.toLowerCase().includes(w) || r.anime.synopsis.toLowerCase().includes(w)) r.score += 8;
+    });
+  });
+  return results.sort((a,b) => b.score - a.score);
+}
+
+function doSmartMatch(query) {
+  const { charIds, animeIds } = extractKeywords(query);
+  const charResults = fuzzyMatchCharacter(query);
+  // combine: keyword-hinted anime + fuzzy char results
+  const seen = new Set();
+  const combined = [];
+  // first: anime-level keyword hits
+  animeIds.forEach(aid => {
+    const anime = animeDatabase.find(a => a.id === aid);
+    if (anime && !seen.has(anime.id)) {
+      seen.add(anime.id);
+      // find best matching char in this anime
+      const bestChar = anime.characters.find(c => {
+        const q = query.toLowerCase();
+        return (c.personality||'').toLowerCase().includes(q.split(/\s+/).find(w=>w.length>1)||'___') ||
+               (c.background||'').toLowerCase().includes(q.split(/\s+/).find(w=>w.length>1)||'___');
+      });
+      combined.push({ type:'anime', anime, char: bestChar || anime.characters[0], charIdx: bestChar ? anime.characters.indexOf(bestChar) : 0, score: 100 });
+    }
+  });
+  // then: fuzzy char results
+  charResults.forEach(r => {
+    if (!seen.has(r.anime.id + '_' + r.charIdx)) {
+      seen.add(r.anime.id + '_' + r.charIdx);
+      combined.push({ type:'char', anime: r.anime, char: r.char, charIdx: r.charIdx, score: r.score });
+    }
+  });
+  // dedupe by anime (keep highest score per anime)
+  const animeSeen = new Set();
+  const deduped = [];
+  combined.forEach(r => {
+    if (!animeSeen.has(r.anime.id)) {
+      animeSeen.add(r.anime.id);
+      deduped.push(r);
+    }
+  });
+  return deduped.sort((a,b) => b.score - a.score);
+}
+
+function startSmartSearch() {
+  const query = document.getElementById('smartQuery').value.trim();
+  if (!query) return;
+  smartState.query = query;
+  smartState.round++;
+  smartState.history.push(query);
+  // show thinking
+  showSmartStage('result');
+  document.getElementById('smartResultCards').innerHTML = '<div class="smart-thinking"><div class="smart-thinking-spinner"></div><div class="smart-thinking-text">正在分析描述，匹配数据库...</div></div>';
+  document.getElementById('smartResultInfo').innerHTML = '';
+  document.querySelector('.smart-none-row').style.display = 'none';
+  setTimeout(() => {
+    const results = doSmartMatch(query);
+    smartState.results = results;
+    renderSmartResults(results, query);
+  }, 800);
+}
+
+function renderSmartResults(results, query) {
+  const info = document.getElementById('smartResultInfo');
+  const cards = document.getElementById('smartResultCards');
+  const noneRow = document.querySelector('.smart-none-row');
+  if (results.length === 0) {
+    info.innerHTML = '未找到匹配结果，试试补充更多细节';
+    cards.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">暂无匹配，建议点击下方按钮进入引导模式</div>';
+    noneRow.style.display = 'block';
+    return;
+  }
+  info.innerHTML = `为 "<strong>${query}</strong>" 找到 <strong>${results.length}</strong> 个匹配结果`;
+  cards.innerHTML = results.slice(0, 8).map(r => {
+    const hasLink = r.anime.seasons && r.anime.seasons[0] && r.anime.seasons[0].link;
+    const season = r.anime.seasons ? r.anime.seasons[0] : null;
+    return `
+    <div class="smart-card" onclick="confirmSmartResult('${r.anime.id}', ${r.charIdx})">
+      <div class="smart-card-img">
+        ${r.char && r.char.image ? `<img src="${r.char.image}" alt="${r.char.name}" onerror="this.parentElement.innerHTML='<div class=\\'smart-card-placeholder\\'>${r.anime.icon||'🎬'}</div>'">` : `<div class="smart-card-placeholder">${r.anime.icon||'🎬'}</div>`}
+        <span class="smart-card-badge ${hasLink ? 'link' : 'char'}">${hasLink ? '可观看' : '人物'}</span>
+      </div>
+      <div class="smart-card-body">
+        <div class="smart-card-anime">${r.anime.name}</div>
+        <div class="smart-card-name">${r.char ? r.char.name : '作品信息'}</div>
+        <div class="smart-card-detail">${r.char ? (r.char.affiliation || r.char.status || '') : r.anime.synopsis.substring(0, 40) + '...'}</div>
+        ${hasLink ? `<div class="smart-card-link-row"><a href="${season.link}" target="_blank" rel="noopener noreferrer" class="smart-card-link" onclick="event.stopPropagation();">▶ ${season.linkLabel || '在线观看'}</a></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  noneRow.style.display = 'block';
+  updateSmartHistory();
+}
+
+function confirmSmartResult(animeId, charIdx) {
+  const anime = animeDatabase.find(a => a.id === animeId);
+  const char = anime ? anime.characters[charIdx] : null;
+  const hasLink = anime.seasons && anime.seasons[0] && anime.seasons[0].link;
+  const season = hasLink ? anime.seasons[0] : null;
+  const content = document.getElementById('smartConfirmContent');
+  content.innerHTML = `
+    <div style="font-size:48px;margin-bottom:8px;">🎯</div>
+    <div>找到匹配结果！</div>
+    <div class="smart-confirm-img">
+      ${char && char.image ? `<img src="${char.image}" alt="${char.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:64px;\\'>${anime.icon||'🎬'}</div>'">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:64px;">${anime.icon||'🎬'}</div>`}
+    </div>
+    <div class="smart-confirm-anime">${anime.name}</div>
+    ${char ? `<div style="font-size:16px;color:var(--text-primary);margin-top:4px;">${char.name}</div>` : ''}
+    <div class="smart-confirm-desc">${char ? (char.personality || anime.synopsis.substring(0,100)) : anime.synopsis.substring(0,100)}</div>
+    ${hasLink ? `<a href="${season.link}" target="_blank" rel="noopener noreferrer" class="smart-card-link" style="font-size:14px;padding:10px 28px;display:inline-block;margin-bottom:16px;">▶ ${season.linkLabel || '在线观看'}</a>` : ''}
+    <div class="smart-confirm-actions">
+      <button class="smart-confirm-back" onclick="showSmartStage('result')">返回结果列表</button>
+      <button class="smart-confirm-view" onclick="jumpToAnime('${animeId}')">查看完整档案</button>
+    </div>
+  `;
+  showSmartStage('confirm');
+}
+
+function jumpToAnime(animeId) {
+  closeSmartSearch();
+  selectAnime(animeId);
+}
+
+function smartNoneOfThese() {
+  showSmartStage('guide');
+  buildGuideQuestions();
+}
+
+function buildGuideQuestions() {
+  const container = document.getElementById('smartGuideQuestions');
+  const questions = [
+    { id:'era', icon:'📅', label:'播出年代', options:['80-90年代','2000-2009年','2010-2014年','2015-2019年','2020年以后','不确定'] },
+    { id:'style', icon:'🎨', label:'动漫风格', options:['热血战斗','搞笑日常','治愈温馨','悬疑惊悚','科幻机甲','恋爱少女','武侠玄幻','不确定'] },
+    { id:'origin', icon:'🌏', label:'作品来源', options:['日本动画','国漫/中国动画','不确定'] },
+    { id:'protagonist', icon:'👤', label:'主角特征', options:['男主角','女主角','多主角/群像','动物/非人类','不确定'] },
+    { id:'memory', icon:'💭', label:'记忆线索', options:[{type:'text',placeholder:'关键台词/场景/BGM...'}], freeText:true }
+  ];
+  container.innerHTML = questions.map(q => `
+    <div class="smart-guide-q">
+      <div class="smart-guide-q-label"><span class="q-icon">${q.icon}</span>${q.label}</div>
+      <div class="smart-guide-q-options" data-qid="${q.id}">
+        ${q.options.map(opt => {
+          if (typeof opt === 'string') {
+            return `<button class="smart-guide-opt" onclick="toggleGuideOpt(this,'${q.id}','${opt}')">${opt}</button>`;
+          } else {
+            return `<span class="smart-guide-opt"><input type="text" placeholder="${opt.placeholder}" onchange="setGuideText('${q.id}',this.value)"></span>`;
+          }
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+  smartState.guideAnswers = {};
+}
+
+function toggleGuideOpt(el, qid, value) {
+  const siblings = el.parentElement.querySelectorAll('.smart-guide-opt:not(:has(input))');
+  siblings.forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  if (!smartState.guideAnswers[qid]) smartState.guideAnswers[qid] = new Set();
+  // single select
+  smartState.guideAnswers[qid] = value;
+}
+
+function setGuideText(qid, value) {
+  smartState.guideAnswers[qid] = value;
+}
+
+function applyGuide() {
+  let refinedQuery = smartState.query;
+  const ga = smartState.guideAnswers;
+  if (ga.era) refinedQuery += ' ' + ga.era;
+  if (ga.style) refinedQuery += ' ' + ga.style;
+  if (ga.origin === '日本动画') refinedQuery += ' 日本动漫';
+  if (ga.origin === '国漫/中国动画') refinedQuery += ' 国漫';
+  if (ga.protagonist) refinedQuery += ' ' + ga.protagonist;
+  if (ga.memory) refinedQuery += ' ' + ga.memory;
+  document.getElementById('smartQuery').value = refinedQuery;
+  startSmartSearch();
+}
+
+function skipGuide() {
+  applyGuide();
+}
+
+function showRefinePanel() {
+  showSmartStage('guide');
+  buildGuideQuestions();
+}
+
+function updateSmartHistory() {
+  const container = document.getElementById('smartHistory');
+  if (!smartState.history.length) { container.innerHTML = ''; return; }
+  container.innerHTML = smartState.history.slice(-5).reverse().map(h => `<span class="smart-history-tag" onclick="fillSmartQuery('${h.replace(/'/g,"\\'")}');showSmartStage('input')">${h.length > 20 ? h.substring(0,20)+'...' : h}</span>`).join('');
 }
 
 renderSidebar();
