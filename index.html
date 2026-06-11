@@ -3612,9 +3612,49 @@ function updateSmartHistory() {
 }
 
 // ========== 全网搜索引擎 (Jikan API) ==========
+// 中文动漫名 → 英文搜索词（Jikan搜索英文效果最好）
+const zhAnimeNameMap = {
+  '间谍过家家':'spy x family','咒术回战':'jujutsu kaisen','鬼灭之刃':'demon slayer',
+  '进击的巨人':'attack on titan','海贼王':'one piece','火影忍者':'naruto',
+  '死神':'bleach','龙珠':'dragon ball','名侦探柯南':'detective conan','柯南':'detective conan',
+  '灌篮高手':'slam dunk','排球少年':'haikyuu','足球小将':'captain tsubasa',
+  '钢之炼金术师':'fullmetal alchemist','钢炼':'fullmetal alchemist',
+  '死亡笔记':'death note','暗杀教室':'assassination classroom',
+  '我的英雄学院':'my hero academia','刀剑神域':'sword art online',
+  '东京喰种':'tokyo ghoul','一拳超人':'one punch man',
+  '紫罗兰永恒花园':'violet evergarden','命运石之门':'steins gate',
+  '电锯人':'chainsaw man','蓝色监狱':'blue lock',
+  '胆大党':'dandadan','葬送的芙莉莲':'frieren',
+  '我推的孩子':'oshi no ko','辉夜大小姐':'kaguya sama love is war',
+  '青春猪头少年':'bunny girl senpai','re0':'re zero',
+  '从零开始':'re zero','无职转生':'mushoku tensei',
+  '工作细胞':'cells at work','小林家的龙女仆':'dragon maid',
+  '关于我转生变成史莱姆':'slime isekai','史莱姆':'slime isekai',
+  '盾之勇者成名录':'shield hero','骨王':'overlord',
+  'overlord':'overlord','迷宫饭':'dungeon meshi',
+  'fate':'fate stay night','高达':'gundam','新世纪福音战士':'evangelion',
+  'eva':'evangelion','凉宫春日':'haruhi suzumiya',
+  '物语系列':'monogatari','阳炎':'kagerou',
+  '天元突破':'gurren lagann','斩赤红之瞳':'akame ga kill',
+  '七大罪':'seven deadly sins','黑色五叶草':'black clover',
+  '电锯人':'chainsaw man','石纪元':'dr stone',
+  '约定的梦幻岛':'promised neverland','学园默示录':'highschool of the dead',
+  '甲铁城':'kabaneri','宝石之国':'land of the lustrous',
+  'Beastars':'beasters','奇蛋物语':'wonder egg priority',
+  '赛马娘':'umamusume','蓝色时期':'blue period',
+  '间谍':'spy x family','咒术':'jujutsu kaisen','鬼灭':'demon slayer',
+  '巨人':'attack on titan','火影':'naruto','龙珠':'dragon ball',
+  '钢炼':'fullmetal alchemist','死笔':'death note',
+  '排少':'haikyuu','一拳':'one punch man','电锯':'chainsaw man',
+  '芙莉莲':'frieren','蓝锁':'blue lock','推子':'oshi no ko',
+  '辉夜':'kaguya sama','转生史莱姆':'slime','骨王':'overlord',
+  '异世界':'isekai','魔王勇者':'maoyuu','迷宫':'dungeon',
+  '高达':'gundam','eva':'evangelion','fate':'fate'
+};
+
 const zhToEnMap = {
   '银发':'silver hair','金色':'blonde','金发':'blonde','红发':'red hair','黑发':'black hair',
-  '魔法少女':'magical girl','巨人':'titan','忍者':'ninja','海盗':'pirate',
+  '魔法少女':'magical girl','忍者':'ninja','海盗':'pirate',
   '机甲':'mecha','末日':'post-apocalyptic','校园':'school','吸血鬼':'vampire',
   '天使':'angel','恶魔':'demon','龙':'dragon','剑':'sword',
   '时间旅行':'time travel','异世界':'isekai','转生':'reincarnation',
@@ -3626,8 +3666,8 @@ const zhToEnMap = {
   '穿越':'isekai','召唤':'summon','精灵':'elf','公主':'princess',
   '骑士':'knight','魔王':'demon lord','冒险':'adventure','推理':'mystery',
   '日常':'slice of life','竞技':'sports','历史':'historical','古代':'ancient',
-  '现代':'modern','都市':'urban','森林':'forest','海':'ocean','滑雪':'ski',
-  '游戏':'game','卡牌':'card','格斗':'fighting','射箭':'archery',
+  '现代':'modern','都市':'urban','森林':'forest','海':'ocean',
+  '游戏':'game','卡牌':'card','格斗':'fighting',
   '钢琴':'piano','偶像':'idol','舞':'dance','花':'flower',
   '猫':'cat','狗':'dog','狐':'fox','兔':'rabbit',
   '妹妹':'sister','哥哥':'brother','双胞胎':'twins',
@@ -3635,13 +3675,21 @@ const zhToEnMap = {
 };
 
 function buildOnlineQueries(query) {
-  const queries = [query];
+  const queries = [query]; // always try Chinese first
+  // Check anime name mapping first
+  for (const [zh, en] of Object.entries(zhAnimeNameMap)) {
+    if (query.includes(zh)) {
+      if (en !== query) queries.push(en);
+      break; // one name match is enough
+    }
+  }
+  // Then check feature keywords
   let en = '';
   for (const [zh, eng] of Object.entries(zhToEnMap)) {
     if (query.includes(zh)) en += (en ? ' ' : '') + eng;
   }
-  if (en && en !== query) queries.push(en);
-  return queries.slice(0, 2);
+  if (en && !queries.includes(en)) queries.push(en);
+  return queries.slice(0, 3);
 }
 
 async function searchOnline(query) {
@@ -3660,12 +3708,14 @@ async function searchOnline(query) {
 
   // search anime
   for (let i = 0; i < queries.length; i++) {
-    if (i > 0) await new Promise(r => setTimeout(r, 400));
+    if (i > 0) await new Promise(r => setTimeout(r, 500));
     try {
-      const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(queries[i]) + '&limit=5&sfw=true&min_score=6');
+      const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(queries[i]) + '&limit=6&sfw=true&min_score=5');
       const data = await resp.json();
       if (data.data) allItems.push(...data.data.map(a => ({...a, _searchType:'anime'})));
     } catch(e) {}
+    // if already have enough results from first query, skip remaining
+    if (allItems.length >= 4 && i >= 1) break;
   }
   // search characters → get their anime
   try {
