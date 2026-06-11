@@ -3743,17 +3743,16 @@ function appendOnlineResults(onlineResults) {
     const card = document.createElement('div');
     card.className = 'smart-card online-card';
     card.onclick = () => confirmOnlineResult(r.malId);
-    card.innerHTML = `
-      <div class="smart-card-img">
-        ${r.image ? '<img src="'+r.image+'" alt="'+r.title+'" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=\\'smart-card-placeholder\\'>🎬</div>'">' : '<div class="smart-card-placeholder">🎬</div>'}
-        <span class="smart-card-badge online">全网</span>
-      </div>
-      <div class="smart-card-body">
-        <div class="smart-card-anime">${r.titleJp || r.title}</div>
-        <div class="smart-card-name">${r.titleEn || r.title}</div>
-        <div class="smart-card-detail">${r.score ? '⭐ '+r.score : ''}${r.episodes ? ' · '+r.episodes+'话' : ''}${r.year ? ' · '+r.year : ''}</div>
-        ${r.fromChar ? '<div class="smart-card-detail" style="color:var(--accent-light);">← '+r.fromChar+'</div>' : ''}
-      </div>`;
+    const imgHtml = r.image
+      ? '<img src="'+r.image+'" alt="'+r.title+'" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML=\'<div class=&quot;smart-card-placeholder&quot;>🎬</div>\'">'
+      : '<div class="smart-card-placeholder">🎬</div>';
+    card.innerHTML = '<div class="smart-card-img">' + imgHtml + '<span class="smart-card-badge online">全网</span></div>' +
+      '<div class="smart-card-body">' +
+      '<div class="smart-card-anime">' + (r.titleJp || r.title) + '</div>' +
+      '<div class="smart-card-name">' + (r.titleEn || r.title) + '</div>' +
+      '<div class="smart-card-detail">' + (r.score ? '⭐ '+r.score : '') + (r.episodes ? ' · '+r.episodes+'话' : '') + (r.year ? ' · '+r.year : '') + '</div>' +
+      (r.fromChar ? '<div class="smart-card-detail" style="color:var(--accent-light);">← '+r.fromChar+'</div>' : '') +
+      '</div>';
     frag.appendChild(card);
   });
   cardsEl.appendChild(frag);
@@ -3763,19 +3762,20 @@ function confirmOnlineResult(malId) {
   const r = smartState.onlineResults.find(o => o.malId === malId);
   if (!r) return;
   const content = document.getElementById('smartConfirmContent');
-  content.innerHTML = `
-    <div class="smart-confirm-img">
-      ${r.image ? '<img src="'+r.image+'" alt="'+r.title+'" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;\\'>🎬</div>'">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;">🎬</div>'}
-    </div>
-    <div class="smart-confirm-anime">${r.titleJp || r.title}</div>
-    ${r.titleEn && r.titleEn !== r.title ? '<div style="font-size:13px;color:var(--text-primary);margin-top:2px;">'+r.titleEn+'</div>' : ''}
-    <div class="smart-confirm-desc">${r.synopsis ? r.synopsis.substring(0,120)+'...' : '暂无简介'}</div>
-    <div style="margin:6px 0;font-size:12px;">${r.score ? '⭐ '+r.score+'/10' : ''}${r.episodes ? ' · '+r.episodes+'话' : ''}${r.year ? ' · '+r.year : ''}</div>
-    <div style="margin:6px 0;">${r.genres.map(g => '<span class="smart-online-tag">'+g+'</span>').join('')}</div>
-    <div class="smart-confirm-actions" style="margin-top:12px;">
-      <button class="smart-confirm-back" onclick="showSmartStage('result')">返回结果列表</button>
-      ${r.url ? '<a href="'+r.url+'" target="_blank" rel="noopener noreferrer" class="smart-confirm-ext-link">在 MAL 查看</a>' : ''}
-    </div>`;
+  const imgHtml = r.image
+    ? '<img src="'+r.image+'" alt="'+r.title+'" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML=\'<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;&quot;>🎬</div>\'">'
+    : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;">🎬</div>';
+  let html = '<div class="smart-confirm-img">' + imgHtml + '</div>';
+  html += '<div class="smart-confirm-anime">' + (r.titleJp || r.title) + '</div>';
+  if (r.titleEn && r.titleEn !== r.title) html += '<div style="font-size:13px;color:var(--text-primary);margin-top:2px;">' + r.titleEn + '</div>';
+  html += '<div class="smart-confirm-desc">' + (r.synopsis ? r.synopsis.substring(0,120)+'...' : '暂无简介') + '</div>';
+  html += '<div style="margin:6px 0;font-size:12px;">' + (r.score ? '⭐ '+r.score+'/10' : '') + (r.episodes ? ' · '+r.episodes+'话' : '') + (r.year ? ' · '+r.year : '') + '</div>';
+  html += '<div style="margin:6px 0;">' + r.genres.map(g => '<span class="smart-online-tag">'+g+'</span>').join('') + '</div>';
+  html += '<div class="smart-confirm-actions" style="margin-top:12px;">';
+  html += '<button class="smart-confirm-back" onclick="showSmartStage(\'result\')">返回结果列表</button>';
+  if (r.url) html += '<a href="'+r.url+'" target="_blank" rel="noopener noreferrer" class="smart-confirm-ext-link">在 MAL 查看</a>';
+  html += '</div>';
+  content.innerHTML = html;
   showSmartStage('confirm');
 }
 
