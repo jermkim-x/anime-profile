@@ -3788,22 +3788,64 @@ const zhToEnMap = {
   '老师':'teacher','学生':'student','王子':'prince'
 };
 
+// 角色名中文→英文映射（用于Jikan角色搜索）
+const zhCharNameMap = {
+  '鸣人':'naruto uzumaki','佐助':'sasuke uchiha','小樱':'sakura haruno','卡卡西':'kakashi hatake',
+  '炭治郎':'tanjiro kamado','祢豆子':'nezuko kamado','善逸':'zenitsu agatsuma','伊之助':'inosuke hashibira',
+  '悟空':'son goku','悟饭':'son gohan','贝吉塔':'vegeta','比克':'piccolo','弗利萨':'frieza',
+  '柯南':'conan edogawa','新一':'shinichi kudo','小兰':'ran mouri','灰原哀':'ai haibara',
+  '路飞':'monkey d luffy','索隆':'roronoa zoro','山治':'vinsmoke sanji','娜美':'nami','罗宾':'nico robin',
+  '乌索普':'usopp','乔巴':'tony tony chopper','弗兰奇':'franky','布鲁克':'brook',
+  '艾斯':'portgas d ace','白胡子':'whitebeard','红发':'shanks','黑胡子':'blackbeard',
+  '一护':'ichigo kurosaki','露琪亚':'rukia kuchiki','恋次':'renji abarai',
+  '爱德华':'edward elric','阿尔':'alphonse elric',
+  '夜神月':'light yagami','琉克':'ryuk',
+  '绿谷':'izuku midoriya','爆豪':'katsuki bakugo','欧尔麦特':'all might',
+  '桐人':'kirito','亚丝娜':'asuna',
+  '埼玉':'saitama','杰诺斯':'genos',
+  '艾伦':'eren yeager','三笠':'mikasa ackerman','利威尔':'levi ackerman','兵长':'levi ackerman',
+  '小杰':'gon freecss','奇犽':'killua zoldyck','西索':'hisoka',
+  '五条悟':'gojo satoru','虎杖':'itadori yuji','伏黑':'fushiguro megumi',
+  '日向':'hinata shoyo','影山':'kageyama tobio',
+  '菲伦':'frieren','欣美尔':'himmel','费伦':'fern','修塔尔克':'stark',
+  '阿库亚':'aqua hoshino','露比':'ruby hoshino',
+  '和叶':'kazuha','平次':'heiji hattori',
+  '犬夜叉':'inuyasha','戈薇':'kagome','杀生丸':'sesshomaru',
+  '金木研':'ken kaneki','董香':'touka kirishima',
+  '坂田银时':'gintoki sakata','神乐':'kagura','新八':'shinpachi',
+  '灶门炭治郎':'tanjiro kamado',
+  '四代火影':'minato namikaze','自来也':'jiraiya','大蛇丸':'orochimaru',
+  '我爱罗':'gaara','迈特凯':'might guy',
+  '波雅汉库克':'boa hancock','多弗朗明哥':'doflamingo',
+  '特拉法尔加罗':'trafalgar law','基德':'eustass kid',
+  '百兽凯多':'kaido','大妈':'big mom',
+  '维克多':'victor nikiforov','勇利':'yuri katsuki',
+  '上条当麻':'touma kamijou','御坂美琴':'mikoto misaka',
+};
+
 function buildOnlineQueries(query) {
   const queries = [query]; // always try Chinese first
-  // Check anime name mapping first
+  // Check anime name mapping
   for (const [zh, en] of Object.entries(zhAnimeNameMap)) {
     if (query.includes(zh)) {
       if (en !== query) queries.push(en);
-      break; // one name match is enough
+      break;
     }
   }
-  // Then check feature keywords
+  // Check character name mapping - add English character name
+  for (const [zh, en] of Object.entries(zhCharNameMap)) {
+    if (query.includes(zh)) {
+      queries.push(en);
+      break;
+    }
+  }
+  // Check feature keywords
   let en = '';
   for (const [zh, eng] of Object.entries(zhToEnMap)) {
     if (query.includes(zh)) en += (en ? ' ' : '') + eng;
   }
   if (en && !queries.includes(en)) queries.push(en);
-  return queries.slice(0, 3);
+  return queries.slice(0, 5);
 }
 
 async function searchOnline(query) {
@@ -3820,15 +3862,15 @@ async function searchOnline(query) {
   const queries = buildOnlineQueries(query);
   const allItems = [];
 
-  // search anime - try multiple query variations
+  // search anime - try multiple query variations, no min_score for broader results
   for (let i = 0; i < queries.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, 500));
     try {
-      const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(queries[i]) + '&limit=8&sfw=true&min_score=4');
+      const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(queries[i]) + '&limit=10&sfw=true');
       const data = await resp.json();
       if (data.data) allItems.push(...data.data.map(a => ({...a, _searchType:'anime'})));
     } catch(e) {}
-    if (allItems.length >= 4 && i >= 1) break;
+    if (allItems.length >= 6 && i >= 1) break;
   }
   // if few results, try picking key words from query for a broader search
   if (allItems.length < 3) {
@@ -3837,28 +3879,41 @@ async function searchOnline(query) {
     if (broadQ && !queries.includes(broadQ)) {
       try {
         await new Promise(r => setTimeout(r, 500));
-        const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(broadQ) + '&limit=5&sfw=true');
+        const resp = await fetch('https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(broadQ) + '&limit=8&sfw=true');
         const data = await resp.json();
         if (data.data) allItems.push(...data.data.map(a => ({...a, _searchType:'anime'})));
       } catch(e) {}
     }
   }
-  // search characters → get their anime
-  try {
-    await new Promise(r => setTimeout(r, 400));
-    const cResp = await fetch('https://api.jikan.moe/v4/characters?q=' + encodeURIComponent(queries[0]) + '&limit=5');
-    const cData = await cResp.json();
-    if (cData.data) {
-      for (const ch of cData.data) {
-        if (ch.anime && ch.anime.length > 0) {
-          const aRef = ch.anime[0].anime;
-          if (aRef && aRef.mal_id) {
-            allItems.push({...aRef, _searchType:'character', _fromChar: ch.name});
+  // search characters with MULTIPLE query variations (not just queries[0])
+  // Try English character name first if available, then Chinese
+  const charQueries = [];
+  for (const [zh, en] of Object.entries(zhCharNameMap)) {
+    if (query.includes(zh)) { charQueries.push(en); break; }
+  }
+  // Also try splitting query into words for character search
+  const qWords = query.replace(/[，。！？、的了是在有和与而但却也都]/g,' ').split(/\s+/).filter(w=>w.length>=2);
+  if (qWords.length > 0 && !charQueries.includes(qWords[0])) charQueries.push(qWords[0]);
+  // Always try original query too
+  if (!charQueries.includes(queries[0])) charQueries.push(queries[0]);
+
+  for (const cq of charQueries.slice(0, 3)) {
+    try {
+      await new Promise(r => setTimeout(r, 400));
+      const cResp = await fetch('https://api.jikan.moe/v4/characters?q=' + encodeURIComponent(cq) + '&limit=5');
+      const cData = await cResp.json();
+      if (cData.data) {
+        for (const ch of cData.data) {
+          if (ch.anime && ch.anime.length > 0) {
+            const aRef = ch.anime[0].anime;
+            if (aRef && aRef.mal_id) {
+              allItems.push({...aRef, _searchType:'character', _fromChar: ch.name});
+            }
           }
         }
       }
-    }
-  } catch(e) {}
+    } catch(e) {}
+  }
 
   // remove indicator
   const ind = document.getElementById('onlineSearchIndicator');
@@ -3987,87 +4042,87 @@ function refineAbstractQuery(query) {
 
 // ========== 神龙斗士 魔神机甲库数据 ==========
 const mechaData = [
-  {name:'龙神丸',nameJp:'龍神丸',pilot:'战部渡',type:'主角机',season:'S1',weapon:'龙神剑 / 登龙剑',desc:'战部渡的座驾魔神，创界山守护神。龙型机甲，以龙神剑为核心武器，必杀技"登龙剑"贯穿一切邪恶。'},
-  {name:'战神丸',nameJp:'戦神丸',pilot:'武一郎',type:'辅助机',season:'S1',weapon:'战神斧 / 战神拳',desc:'武士型魔神，配备战神斧与拳套，攻击力极强。武一郎驾驶，以力量碾压对手。'},
-  {name:'空神丸',nameJp:'空神丸',pilot:'空部凯',type:'辅助机',season:'S1',weapon:'空神弓 / 空神翼',desc:'鸟型飞行魔神，速度极快，擅长空中战。空部凯驾驶，空中机动无人能及。'},
-  {name:'幻神丸',nameJp:'幻神丸',pilot:'忍部幻美',type:'辅助机',season:'S1',weapon:'幻神铃 / 幻神扇',desc:'忍者型魔神，擅分身术与幻术攻击。忍部幻美驾驶，战术灵活多变。'},
-  {name:'邪虎丸',nameJp:'邪虎丸',pilot:'虎王',type:'敌机→伙伴机',season:'S1',weapon:'邪虎枪 / 虎牙斩',desc:'虎型魔神，初期为敌对势力座驾，后成为战部渡的可靠伙伴。虎王驾驶，攻击凶猛。'},
-  {name:'龙王丸',nameJp:'龍王丸',pilot:'战部渡',type:'主角机（进化）',season:'S1',weapon:'龙王剑 / 天翔龙王剑',desc:'龙神丸的进化形态，力量全面升级。机体更巨大，龙王剑一击可斩断山岳。'},
-  {name:'战王丸',nameJp:'戦王丸',pilot:'武一郎',type:'辅助机（进化）',season:'S1',weapon:'战王枪 / 战王粉碎击',desc:'战神丸进化形态，武装更为先进，火力全面强化。'},
-  {name:'幻王丸',nameJp:'幻王丸',pilot:'忍部幻美',type:'辅助机（进化）',season:'S1',weapon:'幻王剑 / 幻王分身术',desc:'幻神丸进化形态，幻术威力倍增，分身数量更多。'},
-  {name:'空王丸',nameJp:'空王丸',pilot:'空部凯',type:'辅助机（进化）',season:'S1',weapon:'空王枪 / 空王疾风翼',desc:'空神丸进化形态，飞行速度达到超音速级别。'},
-  {name:'新星龙神丸',nameJp:'新星龍神丸',pilot:'战部渡',type:'主角机',season:'S2',weapon:'新星龙神剑 / 星龙登龙剑',desc:'S2中龙神丸的全新形态，融合星界能量，战斗力超越龙王丸。'},
-  {name:'龙星丸',nameJp:'龍星丸',pilot:'战部渡',type:'主角机（S2进化）',season:'S2',weapon:'龙星剑 / 龙星爆裂斩',desc:'新星龙神丸的进化形态，可切换龙形态与星形态二段变身。'},
-  {name:'宇宙龙神丸',nameJp:'宇宙龍神丸',pilot:'战部渡',type:'主角机（S2最终）',season:'S2',weapon:'宇宙龙神剑 / 宇宙登龙剑',desc:'S2最终形态，融合宇宙能量的究极魔神，战胜暗黑龙的终极兵器。'},
-  {name:'邪战角',nameJp:'邪戦角',pilot:'虎王',type:'伙伴机',season:'S2',weapon:'邪战角枪 / 角突破击',desc:'邪虎丸在S2中的全新形态，与虎王默契更深，战力大增。'},
-  {name:'夏鬼丸',nameJp:'夏鬼丸',pilot:'战部渡',type:'主角机',season:'S2',weapon:'夏鬼剑 / 夏鬼炎舞斩',desc:'S2中期登场的火焰型魔神，以焰之力灼烧一切敌人。'},
-  {name:'狮子龙神丸',nameJp:'獅子龍神丸',pilot:'战部渡',type:'主角机',season:'超魔',weapon:'狮子龙神剑 / 狮子登龙剑',desc:'超魔神传说中的第一形态，狮之力量加持，攻击极度刚猛。'},
-  {name:'凤凰龙神丸',nameJp:'鳳凰龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'凤凰龙神剑 / 凤凰炎舞斩',desc:'超魔第二形态，凤凰之力赋予火焰属性，兼具攻击与再生能力。'},
-  {name:'剑王龙神丸',nameJp:'剣王龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'剑王龙神剑 / 剑王绝杀斩',desc:'超魔第三形态，剑之奥义集大成者，剑技已达化境。'},
-  {name:'月光龙神丸',nameJp:'月光龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'月光龙神剑 / 月光幻影斩',desc:'超魔第四形态，月光之力赋予幻术与速度加成，虚实结合攻防一体。'},
-  {name:'白虎龙神丸',nameJp:'白虎龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'白虎龙神剑 / 白虎裂空斩',desc:'超魔第五形态，白虎之力极致速度与精确打击。'},
-  {name:'超魔神龙神丸',nameJp:'超魔神龍神丸',pilot:'战部渡',type:'主角机（超魔最终）',season:'超魔',weapon:'超魔神龙神剑 / 超魔神终极登龙剑',desc:'集六道超魔神之力于一体的究极形态，创界山最强守护神。'},
-  {name:'古代龙神丸',nameJp:'古代龍神丸',pilot:'战部渡',type:'主角机',season:'超魔',weapon:'古代龙神剑 / 古代龙神斩',desc:'超魔神篇中觉醒的远古魔神，承载创界山最原始的力量。'},
-  {name:'鸟神丸',nameJp:'鳥神丸',pilot:'空部凯',type:'辅助机',season:'超魔',weapon:'鸟神弓 / 鸟神疾风翼',desc:'空部凯在超魔篇中的座驾，鸟型飞行魔神的最终进化形态。'},
-  {name:'黑龙角',nameJp:'黒龍角',pilot:'暗黑达',type:'敌机',season:'S2',weapon:'黑龙角枪 / 暗黑龙卷',desc:'S2最终BOSS暗黑达座驾，漆黑龙型魔神，拥有毁灭创界山的恐怖力量。'},
-  {name:'合体达',nameJp:'合体ダー',pilot:'合体魔神',type:'敌机',season:'S1',weapon:'合体光线 / 合体冲撞',desc:'S1中登场的合体型敌对魔神，由多个魔神部件强行合体而成。'},
+  {name:'龙神丸',nameJp:'龍神丸',pilot:'战部渡',type:'主角机',season:'S1',weapon:'龙神剑 / 登龙剑',desc:'战部渡的座驾魔神，创界山守护神。龙型机甲，以龙神剑为核心武器，必杀技"登龙剑"贯穿一切邪恶。',image:'https://bkimg.cdn.bcebos.com/pic/9922720e0cf3d7ca1944db7ffc1fbe096b63a90d?x-bce-process=image/format,f_auto'},
+  {name:'战神丸',nameJp:'戦神丸',pilot:'武一郎',type:'辅助机',season:'S1',weapon:'战神斧 / 战神拳',desc:'武士型魔神，配备战神斧与拳套，攻击力极强。武一郎驾驶，以力量碾压对手。',image:'https://bkimg.cdn.bcebos.com/pic/58ee3d6d55fbb2fb4316925d511d37a4462309f7767e?x-bce-process=image/format,f_auto'},
+  {name:'空神丸',nameJp:'空神丸',pilot:'空部凯',type:'辅助机',season:'S1',weapon:'空神弓 / 空神翼',desc:'鸟型飞行魔神，速度极快，擅长空中战。空部凯驾驶，空中机动无人能及。',image:'https://bkimg.cdn.bcebos.com/pic/c2fdfc039245d688c44037a2aac27d1ed21b2471?x-bce-process=image/format,f_auto'},
+  {name:'幻神丸',nameJp:'幻神丸',pilot:'忍部幻美',type:'辅助机',season:'S1',weapon:'幻神铃 / 幻神扇',desc:'忍者型魔神，擅分身术与幻术攻击。忍部幻美驾驶，战术灵活多变。',image:'https://bkimg.cdn.bcebos.com/pic/cefc1e178a82b901e61cbf457d8da9773912ef17?x-bce-process=image/format,f_auto'},
+  {name:'邪虎丸',nameJp:'邪虎丸',pilot:'虎王',type:'敌机→伙伴机',season:'S1',weapon:'邪虎枪 / 虎牙斩',desc:'虎型魔神，初期为敌对势力座驾，后成为战部渡的可靠伙伴。虎王驾驶，攻击凶猛。',image:'https://bkimg.cdn.bcebos.com/pic/fcfaaf51f3deb48f8c54e5b7f8452d292df5e0fed21a?x-bce-process=image/format,f_auto'},
+  {name:'龙王丸',nameJp:'龍王丸',pilot:'战部渡',type:'主角机（进化）',season:'S1',weapon:'龙王剑 / 天翔龙王剑',desc:'龙神丸的进化形态，力量全面升级。机体更巨大，龙王剑一击可斩断山岳。',image:'https://bkimg.cdn.bcebos.com/pic/9a504fc2d56285351c116fb696ef76c6a6ef63b0?x-bce-process=image/format,f_auto'},
+  {name:'战王丸',nameJp:'戦王丸',pilot:'武一郎',type:'辅助机（进化）',season:'S1',weapon:'战王枪 / 战王粉碎击',desc:'战神丸进化形态，武装更为先进，火力全面强化。',image:'https://bkimg.cdn.bcebos.com/pic/a71ea8d3fd1f4134ce167d082b1f95cad1c85ea6?x-bce-process=image/format,f_auto'},
+  {name:'幻王丸',nameJp:'幻王丸',pilot:'忍部幻美',type:'辅助机（进化）',season:'S1',weapon:'幻王剑 / 幻王分身术',desc:'幻神丸进化形态，幻术威力倍增，分身数量更多。',image:'https://bkimg.cdn.bcebos.com/pic/5882b2b7d0a20cf424ac85a978094b36acaf9983?x-bce-process=image/format,f_auto'},
+  {name:'空王丸',nameJp:'空王丸',pilot:'空部凯',type:'辅助机（进化）',season:'S1',weapon:'空王枪 / 空王疾风翼',desc:'空神丸进化形态，飞行速度达到超音速级别。',image:'https://bkimg.cdn.bcebos.com/pic/32fa828ba61ea8d3aafa0c72990a304e241f58ef?x-bce-process=image/format,f_auto'},
+  {name:'新星龙神丸',nameJp:'新星龍神丸',pilot:'战部渡',type:'主角机',season:'S2',weapon:'新星龙神剑 / 星龙登龙剑',desc:'S2中龙神丸的全新形态，融合星界能量，战斗力超越龙王丸。',image:'https://bkimg.cdn.bcebos.com/pic/0b55b319ebc4b7456814461fc1fc1e178a821532?x-bce-process=image/format,f_auto'},
+  {name:'龙星丸',nameJp:'龍星丸',pilot:'战部渡',type:'主角机（S2进化）',season:'S2',weapon:'龙星剑 / 龙星爆裂斩',desc:'新星龙神丸的进化形态，可切换龙形态与星形态二段变身。',image:'https://bkimg.cdn.bcebos.com/pic/1f178a82b9014a90f603310000232e12b31bb051404b?x-bce-process=image/format,f_auto'},
+  {name:'宇宙龙神丸',nameJp:'宇宙龍神丸',pilot:'战部渡',type:'主角机（S2最终）',season:'S2',weapon:'宇宙龙神剑 / 宇宙登龙剑',desc:'S2最终形态，融合宇宙能量的究极魔神，战胜暗黑龙的终极兵器。',image:'https://bkimg.cdn.bcebos.com/pic/8ad4b31c8701a18bce479a46902f07082838fe0f?x-bce-process=image/format,f_auto'},
+  {name:'邪战角',nameJp:'邪戦角',pilot:'虎王',type:'伙伴机',season:'S2',weapon:'邪战角枪 / 角突破击',desc:'邪虎丸在S2中的全新形态，与虎王默契更深，战力大增。',image:'https://bkimg.cdn.bcebos.com/pic/f11f3a292df5e0fe9925e2127d3723a85edf8db1d4d3?x-bce-process=image/format,f_auto'},
+  {name:'夏鬼丸',nameJp:'夏鬼丸',pilot:'战部渡',type:'主角机',season:'S2',weapon:'夏鬼剑 / 夏鬼炎舞斩',desc:'S2中期登场的火焰型魔神，以焰之力灼烧一切敌人。',image:'https://bkimg.cdn.bcebos.com/pic/5bafa40f4bfbfbedab6492ca31a7e036afc37931b175?x-bce-process=image/format,f_auto'},
+  {name:'狮子龙神丸',nameJp:'獅子龍神丸',pilot:'战部渡',type:'主角机',season:'超魔',weapon:'狮子龙神剑 / 狮子登龙剑',desc:'超魔神传说中的第一形态，狮之力量加持，攻击极度刚猛。',image:'https://bkimg.cdn.bcebos.com/pic/42166d224f4a20a456ff15119e529822730ed006?x-bce-process=image/format,f_auto'},
+  {name:'凤凰龙神丸',nameJp:'鳳凰龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'凤凰龙神剑 / 凤凰炎舞斩',desc:'超魔第二形态，凤凰之力赋予火焰属性，兼具攻击与再生能力。',image:'https://bkimg.cdn.bcebos.com/pic/0dd7912397dda144988f7064bcb7d0a20df48665?x-bce-process=image/format,f_auto'},
+  {name:'剑王龙神丸',nameJp:'剣王龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'剑王龙神剑 / 剑王绝杀斩',desc:'超魔第三形态，剑之奥义集大成者，剑技已达化境。',image:'https://bkimg.cdn.bcebos.com/pic/f3d3572c11dfa9ec624950c16cd0f703908fc185?x-bce-process=image/format,f_auto'},
+  {name:'月光龙神丸',nameJp:'月光龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'月光龙神剑 / 月光幻影斩',desc:'超魔第四形态，月光之力赋予幻术与速度加成，虚实结合攻防一体。',image:'https://bkimg.cdn.bcebos.com/pic/80cb39dbb6fd5266d016ce795741802bd40735fa981e?x-bce-process=image/format,f_auto'},
+  {name:'白虎龙神丸',nameJp:'白虎龍神丸',pilot:'战部渡',type:'主角机（超魔进化）',season:'超魔',weapon:'白虎龙神剑 / 白虎裂空斩',desc:'超魔第五形态，白虎之力极致速度与精确打击。',image:'https://bkimg.cdn.bcebos.com/pic/14ce36d3d539b6009f699261e750352ac75cb745?x-bce-process=image/format,f_auto'},
+  {name:'超魔神龙神丸',nameJp:'超魔神龍神丸',pilot:'战部渡',type:'主角机（超魔最终）',season:'超魔',weapon:'超魔神龙神剑 / 超魔神终极登龙剑',desc:'集六道超魔神之力于一体的究极形态，创界山最强守护神。',image:'https://bkimg.cdn.bcebos.com/pic/024f78f0f736afc37931e8ed4e40fcc4b74542a9b4bb?x-bce-process=image/format,f_auto'},
+  {name:'古代龙神丸',nameJp:'古代龍神丸',pilot:'战部渡',type:'主角机',season:'超魔',weapon:'古代龙神剑 / 古代龙神斩',desc:'超魔神篇中觉醒的远古魔神，承载创界山最原始的力量。',image:'https://bkimg.cdn.bcebos.com/pic/4610b912c8fcc3cec3fdb281f119c188d43f87948a77?x-bce-process=image/format,f_auto'},
+  {name:'鸟神丸',nameJp:'鳥神丸',pilot:'空部凯',type:'辅助机',season:'超魔',weapon:'鸟神弓 / 鸟神疾风翼',desc:'空部凯在超魔篇中的座驾，鸟型飞行魔神的最终进化形态。',image:'https://bkimg.cdn.bcebos.com/pic/aa64034f78f0f736afc31f207206a419ebc4b745b5cd?x-bce-process=image/format,f_auto'},
+  {name:'黑龙角',nameJp:'黒龍角',pilot:'暗黑达',type:'敌机',season:'S2',weapon:'黑龙角枪 / 暗黑龙卷',desc:'S2最终BOSS暗黑达座驾，漆黑龙型魔神，拥有毁灭创界山的恐怖力量。',image:'https://bkimg.cdn.bcebos.com/pic/f3d3572c11dfa9ec8a13c10b0c99e003918fa0ec6bdf?x-bce-process=image/format,f_auto'},
+  {name:'合体达',nameJp:'合体ダー',pilot:'合体魔神',type:'敌机',season:'S1',weapon:'合体光线 / 合体冲撞',desc:'S1中登场的合体型敌对魔神，由多个魔神部件强行合体而成。',image:'https://bkimg.cdn.bcebos.com/pic/9e3df8dcd100baa1cd11f8cf6647ae12c8fcc3ce8032?x-bce-process=image/format,f_auto'},
 ];
 
 // ========== 秦时明月 名器图鉴数据 ==========
 const weaponData = [
-  {name:'天问',type:'剑',rank:'剑谱第1',owner:'嬴政',desc:'天子之剑，原出自楚国，秦灭楚后为嬴政所得。剑身古朴，寒光内敛，七颗宝石镶嵌对应北斗七星，象征皇权与天命。'},
-  {name:'渊虹',type:'剑',rank:'剑谱第2',owner:'盖聂',desc:'前身为残虹（荆轲刺秦之剑），由秦国铸剑师融合五金重铸消除戾气。机关城一战被卫庄鲨齿折断，后重铸。'},
-  {name:'太阿',type:'剑',rank:'剑谱第3',owner:'伏念',desc:'欧冶子与干将联手铸造的威道之剑，剑未成而剑气已存于天地间。需持剑人内心之威激发，伏念以圣王剑法驾驭。'},
-  {name:'赤霄',type:'剑',rank:'推断第4',owner:'刘季（刘邦）',desc:'剑身赤红如火，源自刘邦斩白蛇起义典故。招式赤霄化龙与奥义赤霄斩蛇。'},
-  {name:'干将/莫邪',type:'雌雄双剑',rank:'剑谱第5',owner:'田赐',desc:'铸剑师夫妻干将、莫邪所铸，干将为雄代表阳刚，莫邪为雌象征阴柔。剑谱前十中杀性最重，易使持剑者暴走。'},
-  {name:'雪霁',type:'剑',rank:'剑谱第6',owner:'逍遥子',desc:'道家历代掌门信物，道家分裂后天宗与人宗每五年论道争夺。剑身弯曲如雪，与道家顺应自然理念契合。'},
-  {name:'水寒',type:'剑',rank:'剑谱第7',owner:'高渐离',desc:'徐夫子所铸，剑性阴寒，能凝水成冰，与渊虹相克。绝技易水寒舍防全力攻击，寒气可冻结内力运转。'},
-  {name:'秋骊',type:'剑',rank:'剑谱第9',owner:'晓梦',desc:'道家天宗掌门佩剑，蕴含天宗至理。传有吴越相剑师薛烛精魂寄托，真实威力在雪霁之上。'},
-  {name:'凌虚',type:'剑',rank:'剑谱第10',owner:'张良',desc:'剑身修长秀丽，镶嵌十八颗北海碧血丹心。虽为利器却无半点血腥之气，象征超然出世的精神。'},
-  {name:'巨阙',type:'剑',rank:'剑谱第11',owner:'胜七',desc:'通体漆黑，剑身庞大沉重，挥舞时剑气如钢刀锋利。原排名200名开外，胜七使用后一路飙升至第11。'},
-  {name:'虎魄',type:'剑',rank:'剑谱第12',owner:'田虎',desc:'霸道刚猛之剑，虎魄剑法有烈焰猛虎之象极其凌厉。田虎内力深厚，曾正面扭弯追风弧剑。'},
-  {name:'天照',type:'剑',rank:'剑谱第13',owner:'云中君（徐福）',desc:'阴阳家五大长老之一佩剑，掌管金部。天照剑能对受创者造成触目惊心的灼伤，与阴阳术配合威力倍增。'},
-  {name:'含光',type:'剑',rank:'剑谱第16',owner:'颜路',desc:'儒家二当家佩剑，属《列子》"孔周三剑"之一。光照下方能显形，遇强则强，与颜路坐忘心法完美契合。'},
-  {name:'墨眉',type:'无锋之剑',rank:'巨子信物',owner:'燕丹→荆天明',desc:'似剑非攻，墨眉无锋。通体漆黑如墨无刃无锋，可幻化无形剑气，此剑所到之处等于巨子亲临。'},
-  {name:'鲨齿',type:'妖剑',rank:'不入剑谱',owner:'卫庄',desc:'徐夫子父亲所铸，剑身一排鲨鱼齿状构造专克名剑，曾折断渊虹。卫庄以横剑术驾驭，兼具刺挑与劈砍。'},
-  {name:'残虹',type:'剑',rank:'渊虹前身',owner:'荆轲',desc:'徐夫子之母用天外陨石碎片打造的屠龙之剑，燃烧熊熊火焰太过凶戾伤人亦伤己。荆轲刺秦失败后重铸为渊虹。'},
-  {name:'非攻',type:'多形态武器',rank:'墨家至尊',owner:'荆天明',desc:'墨家至尊武器，可变形为剑、弓弩、盾牌、回旋镖、飞爪、螳螂跳、逆鲨齿等多种形态，专克鲨齿。'},
-  {name:'破阵霸王枪',type:'枪',rank:'—',owner:'项少羽',desc:'少羽在墨家禁地通过墨攻棋阵所得，枪刃可自由伸缩，通体青黑色金色龙纹盘旋枪身。'},
-  {name:'逆鳞',type:'剑',rank:'—',owner:'韩非',desc:'法家韩非佩剑，具有剑灵形态的特殊之剑，在天行九歌中登场。剑身古旧，剑灵可自主战斗。'},
+  {name:'天问',type:'剑',rank:'剑谱第1',owner:'嬴政',desc:'天子之剑，原出自楚国，秦灭楚后为嬴政所得。剑身古朴，寒光内敛，七颗宝石镶嵌对应北斗七星，象征皇权与天命。',image:'https://bkimg.cdn.bcebos.com/pic/359b033b5bb5c9eac4904ff8d839b6003af3b34e?x-bce-process=image/format,f_auto'},
+  {name:'渊虹',type:'剑',rank:'剑谱第2',owner:'盖聂',desc:'前身为残虹（荆轲刺秦之剑），由秦国铸剑师融合五金重铸消除戾气。机关城一战被卫庄鲨齿折断，后重铸。',image:'https://bkimg.cdn.bcebos.com/pic/4e4a20a4462309f75e0bf1da770e0cf3d6cad696?x-bce-process=image/format,f_auto'},
+  {name:'太阿',type:'剑',rank:'剑谱第3',owner:'伏念',desc:'欧冶子与干将联手铸造的威道之剑，剑未成而剑气已存于天地间。需持剑人内心之威激发，伏念以圣王剑法驾驭。',image:'https://bkimg.cdn.bcebos.com/pic/d058ccbf6c81800a3cedc515bc3533fa828b47a4?x-bce-process=image/format,f_auto'},
+  {name:'赤霄',type:'剑',rank:'推断第4',owner:'刘季（刘邦）',desc:'剑身赤红如火，源自刘邦斩白蛇起义典故。招式赤霄化龙与奥义赤霄斩蛇。',image:'https://bkimg.cdn.bcebos.com/pic/5882b2b7d0a20cf431ad4983a0505c36acaf2edd336f?x-bce-process=image/format,f_auto'},
+  {name:'干将/莫邪',type:'雌雄双剑',rank:'剑谱第5',owner:'田赐',desc:'铸剑师夫妻干将、莫邪所铸，干将为雄代表阳刚，莫邪为雌象征阴柔。剑谱前十中杀性最重，易使持剑者暴走。',image:'https://bkimg.cdn.bcebos.com/pic/d1160924ab18972bd40738f55c956c899e510fb39cce?x-bce-process=image/format,f_auto'},
+  {name:'雪霁',type:'剑',rank:'剑谱第6',owner:'逍遥子',desc:'道家历代掌门信物，道家分裂后天宗与人宗每五年论道争夺。剑身弯曲如雪，与道家顺应自然理念契合。',image:'https://bkimg.cdn.bcebos.com/pic/d53f8794a4c27d1ed315cd2d15d5ad6eddc43823?x-bce-process=image/format,f_auto'},
+  {name:'水寒',type:'剑',rank:'剑谱第7',owner:'高渐离',desc:'徐夫子所铸，剑性阴寒，能凝水成冰，与渊虹相克。绝技易水寒舍防全力攻击，寒气可冻结内力运转。',image:'https://bkimg.cdn.bcebos.com/pic/7c1ed21b0ef41bd5ad6e078db39396cb39dbb6fd973a?x-bce-process=image/format,f_auto'},
+  {name:'秋骊',type:'剑',rank:'剑谱第9',owner:'晓梦',desc:'道家天宗掌门佩剑，蕴含天宗至理。传有吴越相剑师薛烛精魂寄托，真实威力在雪霁之上。',image:'https://bkimg.cdn.bcebos.com/pic/34fae6cd7b899e510fb3aa5665ffce33c895d143a763?x-bce-process=image/format,f_auto'},
+  {name:'凌虚',type:'剑',rank:'剑谱第10',owner:'张良',desc:'剑身修长秀丽，镶嵌十八颗北海碧血丹心。虽为利器却无半点血腥之气，象征超然出世的精神。',image:'https://bkimg.cdn.bcebos.com/pic/500fd9f9d72a6059dedd86552b34349b023bbab4?x-bce-process=image/format,f_auto'},
+  {name:'巨阙',type:'剑',rank:'剑谱第11',owner:'胜七',desc:'通体漆黑，剑身庞大沉重，挥舞时剑气如钢刀锋利。原排名200名开外，胜七使用后一路飙升至第11。',image:'https://bkimg.cdn.bcebos.com/pic/1ad5ad6eddc451da81cb074737a14566d01609249451?x-bce-process=image/format,f_auto'},
+  {name:'虎魄',type:'剑',rank:'剑谱第12',owner:'田虎',desc:'霸道刚猛之剑，虎魄剑法有烈焰猛虎之象极其凌厉。田虎内力深厚，曾正面扭弯追风弧剑。',image:'https://bkimg.cdn.bcebos.com/pic/810a19d8bc3eb13533faf521b845bfd3fd1f4034eeac?x-bce-process=image/format,f_auto'},
+  {name:'天照',type:'剑',rank:'剑谱第13',owner:'云中君（徐福）',desc:'阴阳家五大长老之一佩剑，掌管金部。天照剑能对受创者造成触目惊心的灼伤，与阴阳术配合威力倍增。',image:'https://bkimg.cdn.bcebos.com/pic/9213b07eca806538f347f34990dda144ad34823f?x-bce-process=image/format,f_auto'},
+  {name:'含光',type:'剑',rank:'剑谱第16',owner:'颜路',desc:'儒家二当家佩剑，属《列子》"孔周三剑"之一。光照下方能显形，遇强则强，与颜路坐忘心法完美契合。',image:'https://bkimg.cdn.bcebos.com/pic/dbb44aed2e738bd4b31c06bed6dd90d6277f9f2f53bf?x-bce-process=image/format,f_auto'},
+  {name:'墨眉',type:'无锋之剑',rank:'巨子信物',owner:'燕丹→荆天明',desc:'似剑非攻，墨眉无锋。通体漆黑如墨无刃无锋，可幻化无形剑气，此剑所到之处等于巨子亲临。',image:'https://bkimg.cdn.bcebos.com/pic/d058ccbf6c81800a1b121f3fb73533fa828b470f?x-bce-process=image/format,f_auto'},
+  {name:'鲨齿',type:'妖剑',rank:'不入剑谱',owner:'卫庄',desc:'徐夫子父亲所铸，剑身一排鲨鱼齿状构造专克名剑，曾折断渊虹。卫庄以横剑术驾驭，兼具刺挑与劈砍。',image:'https://bkimg.cdn.bcebos.com/pic/4610b912c8fcc3ceee7064f99745d688d53f2043?x-bce-process=image/format,f_auto'},
+  {name:'残虹',type:'剑',rank:'渊虹前身',owner:'荆轲',desc:'徐夫子之母用天外陨石碎片打造的屠龙之剑，燃烧熊熊火焰太过凶戾伤人亦伤己。荆轲刺秦失败后重铸为渊虹。',image:'https://bkimg.cdn.bcebos.com/pic/4bed2e738bd4b31c87019d3e3a80307f9e2f060852a5?x-bce-process=image/format,f_auto'},
+  {name:'非攻',type:'多形态武器',rank:'墨家至尊',owner:'荆天明',desc:'墨家至尊武器，可变形为剑、弓弩、盾牌、回旋镖、飞爪、螳螂跳、逆鲨齿等多种形态，专克鲨齿。',image:'https://bkimg.cdn.bcebos.com/pic/55e736d12f2eb9389b50835a4b3a9235e5dde711c158?x-bce-process=image/format,f_auto'},
+  {name:'破阵霸王枪',type:'枪',rank:'—',owner:'项少羽',desc:'少羽在墨家禁地通过墨攻棋阵所得，枪刃可自由伸缩，通体青黑色金色龙纹盘旋枪身。',image:'https://bkimg.cdn.bcebos.com/pic/c2cec3fdfc039245d6880bf652c8b3c27d1ed31b8f8f?x-bce-process=image/format,f_auto'},
+  {name:'逆鳞',type:'剑',rank:'—',owner:'韩非',desc:'法家韩非佩剑，具有剑灵形态的特殊之剑，在天行九歌中登场。剑身古旧，剑灵可自主战斗。',image:'https://bkimg.cdn.bcebos.com/pic/4e4a20a4462309f7905283e07a571bf3d7ca7acb78b2?x-bce-process=image/format,f_auto'},
 ];
 
 // ========== 海贼王 恶魔果实图鉴数据 ==========
 const fruitData = [
-  {name:'橡胶果实',nameJp:'ゴムゴムの実\n（人人果实·尼卡形态）',user:'路飞',type:'paramecia',desc:'身体变成橡胶体质，觉醒后为尼卡形态，可将触碰物体变为橡胶，号称最胡来的力量。',emoji:'🤸'},
-  {name:'四分五裂果实',nameJp:'バラバラの実',user:'巴基',type:'paramecia',desc:'身体可随意分裂成小块，斩击无效。脚不能飞离地面，有效范围200米。',emoji:'✂️'},
-  {name:'爆炸果实',nameJp:'ボムボムの実',user:'Mr.5',type:'paramecia',desc:'身体任何部位都可引爆，包括鼻屎和呼出的气，吃下炸弹也毫发无伤。',emoji:'💥'},
-  {name:'花花果实',nameJp:'ハナハナの実',user:'妮可·罗宾',type:'paramecia',desc:'身体任何部位能如花般在任何地方展开，可组合成翼、巨手等形态。',emoji:'🌸'},
-  {name:'模仿果实',nameJp:'マネマネの実',user:'冯·克雷',type:'paramecia',desc:'右手触摸过的人可完全模仿其外貌和声音，变身时不能攻击。',emoji:'🪞'},
-  {name:'影影果实',nameJp:'カゲカゲの実',user:'月光·莫利亚',type:'paramecia',desc:'可剪断他人影子植入尸体制造僵尸，自身可与影子互换位置。',emoji:'👤'},
-  {name:'震震果实',nameJp:'グラグラの実',user:'白胡子→黑胡子',type:'paramecia',desc:'能震动地面与空间粉碎一切甚至引发海啸，被誉为最强超人系。',emoji:'🌍'},
-  {name:'毒毒果实',nameJp:'ドクドクの実',user:'麦哲伦',type:'paramecia',desc:'释放大量剧毒液体和毒气，可形成毒龙，汗液也含毒素。',emoji:'☠️'},
-  {name:'魂魂果实',nameJp:'ソルソルの実',user:'大妈',type:'paramecia',desc:'操纵灵魂制造霍米兹，从恐惧者身上夺取寿命注入无机物。',emoji:'👻'},
-  {name:'线线果实',nameJp:'イトイトの実',user:'多弗朗明哥',type:'paramecia',desc:'生产操控丝线，可像提线木偶操控他人、切割敌人、系云飞翔，觉醒后可将周围变线。',emoji:'🧵'},
-  {name:'手术果实',nameJp:'オペオペの実',user:'特拉法尔加·罗',type:'paramecia',desc:'创造球形空间ROOM，可随意切割交换拼接人和物体甚至意识，被切割者不会受伤。',emoji:'⚕️'},
-  {name:'童趣果实',nameJp:'ホビホビの実',user:'砂糖',type:'paramecia',desc:'触碰者变成玩具并从他人记忆中消失，可制定契约使玩具无条件服从。',emoji:'🎪'},
-  {name:'甜甜果实',nameJp:'メロメロの実',user:'波雅·汉库克',type:'paramecia',desc:'对好其色的人石化，对随身物品同样有效，对不好色者无效。',emoji:'💋'},
-  {name:'肉球果实',nameJp:'ニキュニキュの実',user:'巴索罗米·熊',type:'paramecia',desc:'双手掌肉球可弹开任何东西包括疲倦和痛苦，可弹射空气形成冲击波。',emoji:'🐾'},
-  {name:'磁磁果实',nameJp:'ジキジキの実',user:'尤斯塔斯·基德',type:'paramecia',desc:'操控磁力与金属，可制造磁场磁化金属物，觉醒后可赋予外部物体磁极。',emoji:'🧲'},
-  {name:'黄泉果实',nameJp:'ヨミヨミの実',user:'布鲁克',type:'paramecia',desc:'死后复活一次，可灵魂出窍，将部分灵魂附于剑上赋予黄泉寒气。',emoji:'💀'},
-  {name:'门门果实',nameJp:'ドアドアの実',user:'布鲁诺',type:'paramecia',desc:'可在任何地方包括空气和人体上开门自由出入。',emoji:'🚪'},
-  {name:'烟雾果实',nameJp:'モクモクの実',user:'斯摩格',type:'logia',desc:'身体元素化为烟雾，可制造白色烟雾实体化困敌，与火系能力相抗衡。',emoji:'💨'},
-  {name:'烧烧果实',nameJp:'メラメラの実',user:'艾斯→萨博',type:'logia',desc:'身体元素化为火，可施展火拳、火炎网等，被岩浆果实克制。',emoji:'🔥'},
-  {name:'沙沙果实',nameJp:'スナスナの実',user:'克洛克达尔',type:'logia',desc:'身体元素化为沙，右手可吸干水分，遇水实体化无法抵挡物理攻击。',emoji:'🏜️'},
-  {name:'响雷果实',nameJp:'ゴロゴロの実',user:'艾尼路',type:'logia',desc:'身体元素化为雷电，雷速移动，最高电压两亿伏特，对绝缘体无效。',emoji:'⚡'},
-  {name:'冰冻果实',nameJp:'ヒエヒエの実',user:'青雉',type:'logia',desc:'身体元素化为冰，可冰封接触到的一切，被冰封者呈现假死状态。',emoji:'🧊'},
-  {name:'闪光果实',nameJp:'ピカピカの実',user:'黄猿',type:'logia',desc:'身体元素化为光，拥有光速移动和光束攻击能力。',emoji:'✨'},
-  {name:'岩浆果实',nameJp:'マグマグの実',user:'赤犬',type:'logia',desc:'身体元素化为岩浆，温度远超一般火焰，可一击融化巨大冰块，克制烧烧果实。',emoji:'🌋'},
-  {name:'暗暗果实',nameJp:'ヤミヤミの実',user:'黑胡子',type:'logia',desc:'最凶恶的自然系，黑暗引力可吸入粉碎一切，接触使能力者失去能力，可夺取死亡者果实。',emoji:'🕳️'},
-  {name:'雪雪果实',nameJp:'ユキユキの実',user:'莫奈',type:'logia',desc:'身体元素化为雪，可制造暴风雪，硬化雪媲美钢铁，惧火焰。',emoji:'❄️'},
-  {name:'瓦斯果实',nameJp:'ガスガスの実',user:'凯撒·库朗',type:'logia',desc:'身体元素化为瓦斯，可操纵各种有毒气体，抽离大气氧气使对手窒息。',emoji:'🌫️'},
-  {name:'人人果实·尼卡形态',nameJp:'ヒトヒトの実\nモデル"ニカ"',user:'路飞',type:'zoan',desc:'太阳神尼卡之力，动物系幻兽种。觉醒后白发火焰发型，可将周围变为橡胶。',emoji:'🌞'},
-  {name:'鸟鸟果实·不死鸟',nameJp:'トリトリの実\nモデル"フェニックス"',user:'马尔科',type:'zoan',desc:'变身不死鸟，全身覆盖青蓝色再生火焰，拥有极强自愈力，可飞行。',emoji:'🦅'},
-  {name:'猫猫果实·豹形态',nameJp:'ネコネコの実\nモデル"レオパルド"',user:'罗布·路奇',type:'zoan',desc:'三段变身：人型、兽型（豹）、人兽型，肉食性动物柔软性与凶暴力大幅提升。',emoji:'🐆'},
+  {name:'橡胶果实',nameJp:'ゴムゴムの実\n（人人果实·尼卡形态）',user:'路飞',type:'paramecia',desc:'身体变成橡胶体质，觉醒后为尼卡形态，可将触碰物体变为橡胶，号称最胡来的力量。',image:'https://static.wikia.nocookie.net/onepiece/images/1/12/Gomu_Gomu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/244?cb=20221108072550',emoji:'🤸'},
+  {name:'四分五裂果实',nameJp:'バラバラの実',user:'巴基',type:'paramecia',desc:'身体可随意分裂成小块，斩击无效。脚不能飞离地面，有效范围200米。',image:'https://static.wikia.nocookie.net/onepiece/images/d/de/Bari_Bari_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20160212174221',emoji:'✂️'},
+  {name:'爆炸果实',nameJp:'ボムボムの実',user:'Mr.5',type:'paramecia',desc:'身体任何部位都可引爆，包括鼻屎和呼出的气，吃下炸弹也毫发无伤。',image:'https://static.wikia.nocookie.net/onepiece/images/1/1a/Bomu_Bomu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/208?cb=20210204030003',emoji:'💥'},
+  {name:'花花果实',nameJp:'ハナハナの実',user:'妮可·罗宾',type:'paramecia',desc:'身体任何部位能如花般在任何地方展开，可组合成翼、巨手等形态。',image:'https://static.wikia.nocookie.net/onepiece/images/2/21/Hana_Hana_no_Mi_Infobox.png/revision/latest/scale-to-width-down/236?cb=20191228120242',emoji:'🌸'},
+  {name:'模仿果实',nameJp:'マネマネの実',user:'冯·克雷',type:'paramecia',desc:'右手触摸过的人可完全模仿其外貌和声音，变身时不能攻击。',image:'https://static.wikia.nocookie.net/onepiece/images/1/12/Mane_Mane_no_Mi_Infobox.png/revision/latest/scale-to-width-down/238?cb=20240605221030',emoji:'🪞'},
+  {name:'影影果实',nameJp:'カゲカゲの実',user:'月光·莫利亚',type:'paramecia',desc:'可剪断他人影子植入尸体制造僵尸，自身可与影子互换位置。',image:'https://static.wikia.nocookie.net/onepiece/images/7/7b/Kage_Kage_no_Mi_Infobox.png/revision/latest/scale-to-width-down/288?cb=20240628055643',emoji:'👤'},
+  {name:'震震果实',nameJp:'グラグラの実',user:'白胡子→黑胡子',type:'paramecia',desc:'能震动地面与空间粉碎一切甚至引发海啸，被誉为最强超人系。',image:'https://static.wikia.nocookie.net/onepiece/images/e/e3/Gura_Gura_no_Mi_Infobox.png/revision/latest/scale-to-width-down/195?cb=20251002184350',emoji:'🌍'},
+  {name:'毒毒果实',nameJp:'ドクドクの実',user:'麦哲伦',type:'paramecia',desc:'释放大量剧毒液体和毒气，可形成毒龙，汗液也含毒素。',image:'https://static.wikia.nocookie.net/onepiece/images/2/21/Doku_Doku_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20160129102538',emoji:'☠️'},
+  {name:'魂魂果实',nameJp:'ソルソルの実',user:'大妈',type:'paramecia',desc:'操纵灵魂制造霍米兹，从恐惧者身上夺取寿命注入无机物。',image:'https://static.wikia.nocookie.net/onepiece/images/9/9d/Soru_Soru_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20230113122808',emoji:'👻'},
+  {name:'线线果实',nameJp:'イトイトの実',user:'多弗朗明哥',type:'paramecia',desc:'生产操控丝线，可像提线木偶操控他人、切割敌人、系云飞翔，觉醒后可将周围变线。',image:'https://static.wikia.nocookie.net/onepiece/images/a/ae/Ito_Ito_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20151220070449',emoji:'🧵'},
+  {name:'手术果实',nameJp:'オペオペの実',user:'特拉法尔加·罗',type:'paramecia',desc:'创造球形空间ROOM，可随意切割交换拼接人和物体甚至意识，被切割者不会受伤。',image:'https://static.wikia.nocookie.net/onepiece/images/0/0e/Ope_Ope_no_Mi_Infobox.png/revision/latest/scale-to-width-down/281?cb=20210409181034',emoji:'⚕️'},
+  {name:'童趣果实',nameJp:'ホビホビの実',user:'砂糖',type:'paramecia',desc:'触碰者变成玩具并从他人记忆中消失，可制定契约使玩具无条件服从。',image:'https://static.wikia.nocookie.net/onepiece/images/3/3d/Hobi_Hobi_no_Mi_Infobox.png/revision/latest/scale-to-width-down/200?cb=20241129153900',emoji:'🎪'},
+  {name:'甜甜果实',nameJp:'メロメロの実',user:'波雅·汉库克',type:'paramecia',desc:'对好其色的人石化，对随身物品同样有效，对不好色者无效。',image:'https://static.wikia.nocookie.net/onepiece/images/9/98/Mero_Mero_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20230306202058',emoji:'💋'},
+  {name:'肉球果实',nameJp:'ニキュニキュの実',user:'巴索罗米·熊',type:'paramecia',desc:'双手掌肉球可弹开任何东西包括疲倦和痛苦，可弹射空气形成冲击波。',image:'https://static.wikia.nocookie.net/onepiece/images/e/e4/Nikyu_Nikyu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/257?cb=20250525161631',emoji:'🐾'},
+  {name:'磁磁果实',nameJp:'ジキジキの実',user:'尤斯塔斯·基德',type:'paramecia',desc:'操控磁力与金属，可制造磁场磁化金属物，觉醒后可赋予外部物体磁极。',image:'https://static.wikia.nocookie.net/onepiece/images/1/13/Jiki_Jiki_no_Mi_Infobox.png/revision/latest/scale-to-width-down/255?cb=20260316222052',emoji:'🧲'},
+  {name:'黄泉果实',nameJp:'ヨミヨミの実',user:'布鲁克',type:'paramecia',desc:'死后复活一次，可灵魂出窍，将部分灵魂附于剑上赋予黄泉寒气。',image:'https://static.wikia.nocookie.net/onepiece/images/3/3b/Yomi_Yomi_no_Mi_Infobox.png/revision/latest/scale-to-width-down/218?cb=20201116170233',emoji:'💀'},
+  {name:'门门果实',nameJp:'ドアドアの実',user:'布鲁诺',type:'paramecia',desc:'可在任何地方包括空气和人体上开门自由出入。',image:'https://static.wikia.nocookie.net/onepiece/images/0/04/Doa_Doa_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20230117020238',emoji:'🚪'},
+  {name:'烟雾果实',nameJp:'モクモクの実',user:'斯摩格',type:'logia',desc:'身体元素化为烟雾，可制造白色烟雾实体化困敌，与火系能力相抗衡。',image:'https://static.wikia.nocookie.net/onepiece/images/8/8d/Moku_Moku_no_Mi_Infobox.png/revision/latest/scale-to-width-down/216?cb=20250826143852',emoji:'💨'},
+  {name:'烧烧果实',nameJp:'メラメラの実',user:'艾斯→萨博',type:'logia',desc:'身体元素化为火，可施展火拳、火炎网等，被岩浆果实克制。',image:'https://static.wikia.nocookie.net/onepiece/images/8/8c/Mera_Mera_no_Mi_Infobox.png/revision/latest/scale-to-width-down/272?cb=20240710204632',emoji:'🔥'},
+  {name:'沙沙果实',nameJp:'スナスナの実',user:'克洛克达尔',type:'logia',desc:'身体元素化为沙，右手可吸干水分，遇水实体化无法抵挡物理攻击。',image:'https://static.wikia.nocookie.net/onepiece/images/7/7d/Suna_Suna_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20220408131752',emoji:'🏜️'},
+  {name:'响雷果实',nameJp:'ゴロゴロの実',user:'艾尼路',type:'logia',desc:'身体元素化为雷电，雷速移动，最高电压两亿伏特，对绝缘体无效。',image:'https://static.wikia.nocookie.net/onepiece/images/d/d2/Goro_Goro_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20230907005154',emoji:'⚡'},
+  {name:'冰冻果实',nameJp:'ヒエヒエの実',user:'青雉',type:'logia',desc:'身体元素化为冰，可冰封接触到的一切，被冰封者呈现假死状态。',image:'https://static.wikia.nocookie.net/onepiece/images/5/56/Hie_Hie_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20221101155813',emoji:'🧊'},
+  {name:'闪光果实',nameJp:'ピカピカの実',user:'黄猿',type:'logia',desc:'身体元素化为光，拥有光速移动和光束攻击能力。',image:'https://static.wikia.nocookie.net/onepiece/images/6/66/Pika_Pika_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20250501014523',emoji:'✨'},
+  {name:'岩浆果实',nameJp:'マグマグの実',user:'赤犬',type:'logia',desc:'身体元素化为岩浆，温度远超一般火焰，可一击融化巨大冰块，克制烧烧果实。',image:'https://static.wikia.nocookie.net/onepiece/images/0/07/Magu_Magu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20231013044624',emoji:'🌋'},
+  {name:'暗暗果实',nameJp:'ヤミヤミの実',user:'黑胡子',type:'logia',desc:'最凶恶的自然系，黑暗引力可吸入粉碎一切，接触使能力者失去能力，可夺取死亡者果实。',image:'https://static.wikia.nocookie.net/onepiece/images/f/f5/Yami_Yami_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20240627010252',emoji:'🕳️'},
+  {name:'雪雪果实',nameJp:'ユキユキの実',user:'莫奈',type:'logia',desc:'身体元素化为雪，可制造暴风雪，硬化雪媲美钢铁，惧火焰。',image:'https://static.wikia.nocookie.net/onepiece/images/a/a9/Yuki_Yuki_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20240221181209',emoji:'❄️'},
+  {name:'瓦斯果实',nameJp:'ガスガスの実',user:'凯撒·库朗',type:'logia',desc:'身体元素化为瓦斯，可操纵各种有毒气体，抽离大气氧气使对手窒息。',image:'https://static.wikia.nocookie.net/onepiece/images/c/cf/Gasu_Gasu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/300?cb=20230902035324',emoji:'🌫️'},
+  {name:'人人果实·尼卡形态',nameJp:'ヒトヒトの実\nモデル"ニカ"',user:'路飞',type:'zoan',desc:'太阳神尼卡之力，动物系幻兽种。觉醒后白发火焰发型，可将周围变为橡胶。',image:'https://static.wikia.nocookie.net/onepiece/images/1/12/Gomu_Gomu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/244?cb=20221108072550',emoji:'🌞'},
+  {name:'鸟鸟果实·不死鸟',nameJp:'トリトリの実\nモデル"フェニックス"',user:'马尔科',type:'zoan',desc:'变身不死鸟，全身覆盖青蓝色再生火焰，拥有极强自愈力，可飞行。',image:'https://static.wikia.nocookie.net/onepiece/images/5/51/Tori_Tori_no_Mi%2C_Model_Phoenix_Infobox.png/revision/latest/scale-to-width-down/219?cb=20251002184357',emoji:'🦅'},
+  {name:'猫猫果实·豹形态',nameJp:'ネコネコの実\nモデル"レオパルド"',user:'罗布·路奇',type:'zoan',desc:'三段变身：人型、兽型（豹）、人兽型，肉食性动物柔软性与凶暴力大幅提升。',image:'https://static.wikia.nocookie.net/onepiece/images/9/98/Neko_Neko_no_Mi%2C_Model_Leopard_Infobox.png/revision/latest/scale-to-width-down/232?cb=20230306213909',emoji:'🐆'},
 ];
 
 // ========== 神龙斗士 魔神机甲库页面 ==========
@@ -4084,12 +4139,15 @@ function filterMecha(s) { document.querySelectorAll('#mechaFilter .filter-btn').
 function renderMechaGrid(filter) {
   const grid = document.getElementById('mechaGrid');
   const list = filter==='全部'?mechaData:mechaData.filter(m=>m.season===filter);
-  grid.innerHTML = list.map((m,i)=>'<div class="mecha-card" onclick="showMechaDetail('+mechaData.indexOf(m)+')"><div class="mecha-img"><span style="font-size:56px;">⚔️</span><span class="season-tag">'+m.season+'</span></div><div class="mecha-footer"><div class="mecha-name">'+m.name+'</div><div class="mecha-jp">'+m.nameJp+'</div><div class="mecha-pilot">驾驶员: '+m.pilot+'</div></div></div>').join('');
+  grid.innerHTML = list.map((m,i)=>{
+    const imgHtml = m.image ? '<img src="'+m.image+'" alt="'+m.name+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:56px;display:none;" class="mecha-emoji-fallback">⚔️</span>' : '<span style="font-size:56px;">⚔️</span>';
+    return '<div class="mecha-card" onclick="showMechaDetail('+mechaData.indexOf(m)+')"><div class="mecha-img">'+imgHtml+'<span class="season-tag">'+m.season+'</span></div><div class="mecha-footer"><div class="mecha-name">'+m.name+'</div><div class="mecha-jp">'+m.nameJp+'</div><div class="mecha-pilot">驾驶员: '+m.pilot+'</div></div></div>';
+  }).join('');
 }
 function showMechaDetail(idx) {
   const m = mechaData[idx];
   document.getElementById('modalTitle').textContent = m.name+' · 魔神机甲库';
-  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="font-size:72px;margin-bottom:12px;">⚔️</div><h2 style="font-size:24px;font-weight:700;color:#b388ff;">'+m.name+'</h2><div style="font-size:14px;color:var(--text-muted);">'+m.nameJp+'</div><div style="margin-top:16px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(179,136,255,0.15);color:#b388ff;font-size:12px;">'+m.type+'</span><span style="padding:6px 14px;border-radius:12px;background:rgba(179,136,255,0.1);color:var(--text-secondary);font-size:12px;">'+m.season+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 驾驶员</h4><p>'+m.pilot+'</p></div><div class="info-section"><h4><span class="icon">⚔️</span> 主要武装</h4><p>'+m.weapon+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 机体介绍</h4><p>'+m.desc+'</p></div></div>';
+  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="margin-bottom:12px;">'+(m.image?'<img src="'+m.image+'" alt="'+m.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true" style="max-width:200px;max-height:200px;object-fit:contain;">':'<div style="font-size:72px;">⚔️</div>')+'</div><h2 style="font-size:24px;font-weight:700;color:#b388ff;">'+m.name+'</h2><div style="font-size:14px;color:var(--text-muted);">'+m.nameJp+'</div><div style="margin-top:16px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(179,136,255,0.15);color:#b388ff;font-size:12px;">'+m.type+'</span><span style="padding:6px 14px;border-radius:12px;background:rgba(179,136,255,0.1);color:var(--text-secondary);font-size:12px;">'+m.season+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 驾驶员</h4><p>'+m.pilot+'</p></div><div class="info-section"><h4><span class="icon">⚔️</span> 主要武装</h4><p>'+m.weapon+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 机体介绍</h4><p>'+m.desc+'</p></div></div>';
   document.getElementById('modalOverlay').classList.add('show');
 }
 
@@ -4107,12 +4165,16 @@ function filterWeapons(t) { document.querySelectorAll('#weaponFilter .filter-btn
 function renderWeaponGrid(filter) {
   const grid = document.getElementById('weaponGrid');
   const list = filter==='全部'?weaponData:filter==='剑'?weaponData.filter(w=>w.type==='剑'):weaponData.filter(w=>w.type!=='剑');
-  grid.innerHTML = list.map((w,i)=>{const isTop5 = w.rank.match(/第[1-5]/); return '<div class="weapon-card" onclick="showWeaponDetail('+weaponData.indexOf(w)+')"><div class="weapon-img"><span style="font-size:48px;">🗡️</span><span class="rank-tag '+(isTop5?'top5':'')+'">'+w.rank+'</span></div><div class="weapon-footer"><div class="weapon-name">'+w.name+'</div><div class="weapon-type">'+w.type+'</div><div class="weapon-owner">持有: '+w.owner+'</div></div></div>';}).join('');
+  grid.innerHTML = list.map((w,i)=>{
+    const isTop5 = w.rank.match(/第[1-5]/);
+    const imgHtml = w.image ? '<img src="'+w.image+'" alt="'+w.name+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:48px;display:none;" class="weapon-emoji-fallback">🗡️</span>' : '<span style="font-size:48px;">🗡️</span>';
+    return '<div class="weapon-card" onclick="showWeaponDetail('+weaponData.indexOf(w)+')"><div class="weapon-img">'+imgHtml+'<span class="rank-tag '+(isTop5?'top5':'')+'">'+w.rank+'</span></div><div class="weapon-footer"><div class="weapon-name">'+w.name+'</div><div class="weapon-type">'+w.type+'</div><div class="weapon-owner">持有: '+w.owner+'</div></div></div>';
+  }).join('');
 }
 function showWeaponDetail(idx) {
   const w = weaponData[idx];
   document.getElementById('modalTitle').textContent = w.name+' · 名器图鉴';
-  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="font-size:72px;margin-bottom:12px;">🗡️</div><h2 style="font-size:24px;font-weight:700;color:#ffb74d;">'+w.name+'</h2><div style="margin-top:12px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(255,183,77,0.15);color:#ffb74d;font-size:12px;">'+w.type+'</span><span style="padding:6px 14px;border-radius:12px;background:rgba(255,183,77,0.1);color:var(--text-secondary);font-size:12px;">'+w.rank+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 持有者</h4><p>'+w.owner+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 武器介绍</h4><p>'+w.desc+'</p></div></div>';
+  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="margin-bottom:12px;">'+(w.image?'<img src="'+w.image+'" alt="'+w.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true" style="max-width:200px;max-height:200px;object-fit:contain;">':'<div style="font-size:72px;">🗡️</div>')+'</div><h2 style="font-size:24px;font-weight:700;color:#ffb74d;">'+w.name+'</h2><div style="margin-top:12px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(255,183,77,0.15);color:#ffb74d;font-size:12px;">'+w.type+'</span><span style="padding:6px 14px;border-radius:12px;background:rgba(255,183,77,0.1);color:var(--text-secondary);font-size:12px;">'+w.rank+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 持有者</h4><p>'+w.owner+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 武器介绍</h4><p>'+w.desc+'</p></div></div>';
   document.getElementById('modalOverlay').classList.add('show');
 }
 
@@ -4142,7 +4204,7 @@ function showFruitDetail(idx) {
   const typeName = {paramecia:'超人系',logia:'自然系',zoan:'动物系'};
   const typeColor = {paramecia:'#c6ff00',logia:'#ff6464',zoan:'#64b4ff'};
   document.getElementById('modalTitle').textContent = f.name+' · 恶魔果实图鉴';
-  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="font-size:72px;margin-bottom:12px;">'+f.emoji+'</div><h2 style="font-size:24px;font-weight:700;color:'+typeColor[f.type]+';">'+f.name+'</h2><div style="font-size:12px;color:var(--text-muted);white-space:pre-line;">'+f.nameJp+'</div><div style="margin-top:12px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(198,255,0,0.15);color:'+typeColor[f.type]+';font-size:12px;">'+typeName[f.type]+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 能力者</h4><p>'+f.user+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 能力介绍</h4><p>'+f.desc+'</p></div></div>';
+  document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="margin-bottom:12px;">'+(f.image?'<img src="'+f.image+'" alt="'+f.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true" style="max-width:200px;max-height:200px;object-fit:contain;">':'<div style="font-size:72px;">'+f.emoji+'</div>')+'</div><h2 style="font-size:24px;font-weight:700;color:'+typeColor[f.type]+';">'+f.name+'</h2><div style="font-size:12px;color:var(--text-muted);white-space:pre-line;">'+f.nameJp+'</div><div style="margin-top:12px;display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;"><span style="padding:6px 14px;border-radius:12px;background:rgba(198,255,0,0.15);color:'+typeColor[f.type]+';font-size:12px;">'+typeName[f.type]+'</span></div></div><div style="padding:0 16px;"><div class="info-section"><h4><span class="icon">👤</span> 能力者</h4><p>'+f.user+'</p></div><div class="info-section"><h4><span class="icon">📋</span> 能力介绍</h4><p>'+f.desc+'</p></div></div>';
   document.getElementById('modalOverlay').classList.add('show');
 }
 
