@@ -4140,7 +4140,7 @@ function renderMechaGrid(filter) {
   const grid = document.getElementById('mechaGrid');
   const list = filter==='全部'?mechaData:mechaData.filter(m=>m.season===filter);
   grid.innerHTML = list.map((m,i)=>{
-    const imgHtml = m.image ? '<img src="'+m.image+'" alt="'+m.name+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:56px;display:none;" class="mecha-emoji-fallback">⚔️</span>' : '<span style="font-size:56px;">⚔️</span>';
+    const imgHtml = m.image ? '<img src="'+m.image+'" alt="'+m.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:56px;display:none;" class="mecha-emoji-fallback">⚔️</span>' : '<span style="font-size:56px;">⚔️</span>';
     return '<div class="mecha-card" onclick="showMechaDetail('+mechaData.indexOf(m)+')"><div class="mecha-img">'+imgHtml+'<span class="season-tag">'+m.season+'</span></div><div class="mecha-footer"><div class="mecha-name">'+m.name+'</div><div class="mecha-jp">'+m.nameJp+'</div><div class="mecha-pilot">驾驶员: '+m.pilot+'</div></div></div>';
   }).join('');
 }
@@ -4167,7 +4167,7 @@ function renderWeaponGrid(filter) {
   const list = filter==='全部'?weaponData:filter==='剑'?weaponData.filter(w=>w.type==='剑'):weaponData.filter(w=>w.type!=='剑');
   grid.innerHTML = list.map((w,i)=>{
     const isTop5 = w.rank.match(/第[1-5]/);
-    const imgHtml = w.image ? '<img src="'+w.image+'" alt="'+w.name+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:48px;display:none;" class="weapon-emoji-fallback">🗡️</span>' : '<span style="font-size:48px;">🗡️</span>';
+    const imgHtml = w.image ? '<img src="'+w.image+'" alt="'+w.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false" style="width:100%;height:100%;object-fit:cover;"><span style="font-size:48px;display:none;" class="weapon-emoji-fallback">🗡️</span>' : '<span style="font-size:48px;">🗡️</span>';
     return '<div class="weapon-card" onclick="showWeaponDetail('+weaponData.indexOf(w)+')"><div class="weapon-img">'+imgHtml+'<span class="rank-tag '+(isTop5?'top5':'')+'">'+w.rank+'</span></div><div class="weapon-footer"><div class="weapon-name">'+w.name+'</div><div class="weapon-type">'+w.type+'</div><div class="weapon-owner">持有: '+w.owner+'</div></div></div>';
   }).join('');
 }
@@ -4197,7 +4197,10 @@ function renderFruitGrid(filter) {
   const grid = document.getElementById('fruitGrid');
   const typeMap = {'超人系':'paramecia','自然系':'logia','动物系':'zoan'};
   const list = filter==='全部'?fruitData:fruitData.filter(f=>f.type===typeMap[filter]);
-  grid.innerHTML = list.map((f,i)=>'<div class="fruit-card" onclick="showFruitDetail('+fruitData.indexOf(f)+')"><div class="fruit-img"><span style="font-size:36px;">'+f.emoji+'</span><span class="type-tag '+typeClass[f.type]+'">'+typeName[f.type]+'</span></div><div class="fruit-footer"><div class="fruit-name">'+f.name+'</div><div class="fruit-jp">'+f.nameJp.replace(/\n/g,'<br>')+'</div><div class="fruit-user">能力者: '+f.user+'</div></div></div>').join('');
+  grid.innerHTML = list.map((f,i)=>{
+    const imgHtml = f.image ? '<img src="'+f.image+'" alt="'+f.name+'" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false" style="width:100%;height:100%;object-fit:contain;"><span style="font-size:36px;display:none;" class="fruit-emoji-fb">'+f.emoji+'</span>' : '<span style="font-size:36px;">'+f.emoji+'</span>';
+    return '<div class="fruit-card" onclick="showFruitDetail('+fruitData.indexOf(f)+')"><div class="fruit-img">'+imgHtml+'<span class="type-tag '+typeClass[f.type]+'">'+typeName[f.type]+'</span></div><div class="fruit-footer"><div class="fruit-name">'+f.name+'</div><div class="fruit-jp">'+f.nameJp.replace(/\n/g,'<br>')+'</div><div class="fruit-user">能力者: '+f.user+'</div></div></div>';
+  }).join('');
 }
 function showFruitDetail(idx) {
   const f = fruitData[idx];
